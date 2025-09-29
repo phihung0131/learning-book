@@ -2924,3 +2924,926 @@ Việc nắm bắt bảo mật thường là về việc hiểu con người và
 
 *(Kết thúc Chương 9. Chương tiếp theo, Chương 10, sẽ khám phá "Conway’s Law and System Design".)*
 
+Chắc chắn rồi! Chúng ta sẽ bắt đầu Chương 10: "Luật Conway và Thiết kế Hệ thống (Conway's Law and System Design)". Chương này khám phá mối liên kết sâu sắc giữa cấu trúc tổ chức và kiến trúc hệ thống bạn xây dựng.
+
+---
+
+### **10. Luật Conway và Thiết kế Hệ thống (Conway's Law and System Design)**
+
+Phần lớn cuốn sách cho đến nay đã tập trung vào các thách thức kỹ thuật trong việc chuyển sang một kiến trúc chi tiết. Nhưng cũng có những vấn đề khác, về mặt tổ chức, cần xem xét. Như chúng ta sẽ tìm hiểu trong chương này, bạn phớt lờ sơ đồ tổ chức của công ty mình và bạn sẽ gặp nguy hiểm!
+
+Ngành của chúng ta còn non trẻ, và dường như liên tục tự tái tạo. Tuy nhiên, một vài **luật (laws)** quan trọng đã đứng vững trước thử thách của thời gian. Ví dụ, định luật Moore, trong đó nói rằng mật độ của các bóng bán dẫn trên các mạch tích hợp tăng gấp đôi sau mỗi hai năm, đã được chứng minh là chính xác một cách kỳ lạ (mặc dù một số người dự đoán rằng xu hướng này đã chậm lại). Một định luật mà tôi đã thấy gần như đúng một cách phổ quát, và hữu ích hơn nhiều trong công việc hàng ngày của mình, là **luật Conway**.
+
+Bài báo của Melvin Conway, *How Do Committees Invent*, được xuất bản trên tạp chí *Datamation* vào tháng 4 năm 1968, đã quan sát rằng:
+
+> *Bất kỳ tổ chức nào thiết kế một hệ thống (được định nghĩa ở đây rộng hơn là chỉ các hệ thống thông tin) chắc chắn sẽ tạo ra một thiết kế có cấu trúc là một bản sao của cấu trúc giao tiếp của tổ chức.*
+
+Tuyên bố này thường được trích dẫn, dưới nhiều hình thức khác nhau, là luật Conway. Eric S. Raymond đã tóm tắt hiện tượng này trong *The New Hacker’s Dictionary* (MIT Press) bằng cách nói rằng "Nếu bạn có bốn nhóm làm việc trên một trình biên dịch, bạn sẽ nhận được một trình biên dịch 4-pass."
+
+#### **Bằng chứng (Evidence)**
+
+Câu chuyện kể rằng khi Melvin Conway nộp bài báo của mình về chủ đề này cho *Harvard Business Review*, họ đã từ chối nó, cho rằng ông đã không chứng minh được luận điểm của mình. Tôi đã thấy lý thuyết này được chứng thực trong rất nhiều tình huống khác nhau đến nỗi tôi đã chấp nhận nó là đúng. Nhưng bạn không cần phải tin lời tôi: kể từ khi Conway nộp bài gốc, rất nhiều công việc đã được thực hiện trong lĩnh vực này. Một số nghiên cứu đã được thực hiện để khám phá mối tương quan giữa cấu trúc tổ chức và các hệ thống họ tạo ra.
+
+##### **Các Tổ chức Ghép nối Lỏng lẻo và Chặt chẽ (Loose and Tightly Coupled Organizations)**
+
+Trong *Exploring the Duality Between Product and Organizational Architectures* (Harvard Business School), các tác giả Alan MacCormack, John Rusnak, và Carliss Baldwin xem xét một số hệ thống phần mềm khác nhau, được phân loại một cách lỏng lẻo là được tạo ra bởi các **tổ chức ghép nối lỏng lẻo** hoặc các **tổ chức ghép nối chặt chẽ**. Đối với các tổ chức ghép nối chặt chẽ, hãy nghĩ đến các công ty sản phẩm thương mại thường được đặt cùng một chỗ với các tầm nhìn và mục tiêu được điều chỉnh mạnh mẽ, trong khi các tổ chức ghép nối lỏng lẻo được đại diện tốt bởi các cộng đồng mã nguồn mở phân tán.
+
+Trong nghiên cứu của họ, trong đó họ đã khớp các cặp sản phẩm tương tự từ mỗi loại tổ chức, các tác giả đã phát hiện ra rằng các tổ chức ghép nối lỏng lẻo hơn thực sự đã tạo ra các hệ thống có tính `module` hơn, ít ghép nối hơn, trong khi phần mềm của các tổ chức tập trung chặt chẽ hơn lại ít được `module` hóa hơn.
+
+##### **Windows Vista**
+
+Microsoft đã thực hiện một **nghiên cứu thực nghiệm** trong đó họ xem xét cách cấu trúc tổ chức của riêng mình ảnh hưởng đến chất lượng phần mềm của một sản phẩm cụ thể, Windows Vista. Cụ thể, các nhà nghiên cứu đã xem xét nhiều yếu tố để xác định một thành phần trong hệ thống sẽ **dễ bị lỗi (error-prone)** như thế nào.[^1] Sau khi xem xét nhiều chỉ số, bao gồm các chỉ số chất lượng phần mềm thường được sử dụng như độ phức tạp của mã, họ đã phát hiện ra rằng các chỉ số liên quan đến cấu trúc tổ chức đã được chứng minh là các biện pháp có ý nghĩa thống kê nhất.
+
+Vì vậy, ở đây chúng ta có một ví dụ khác về cấu trúc tổ chức ảnh hưởng đến bản chất của hệ thống mà tổ chức đó tạo ra.
+
+##### **Netflix và Amazon**
+
+Có lẽ hai tấm gương tiêu biểu cho ý tưởng rằng các tổ chức và kiến trúc nên được điều chỉnh là Amazon và Netflix. Ngay từ sớm, Amazon đã bắt đầu hiểu được lợi ích của việc các đội sở hữu toàn bộ vòng đời của các hệ thống họ quản lý. Họ muốn các đội sở hữu và vận hành các hệ thống họ chăm sóc, quản lý toàn bộ vòng đời. Nhưng Amazon cũng biết rằng các đội nhỏ có thể làm việc nhanh hơn các đội lớn. Điều này đã dẫn đến các **đội hai bánh pizza (two-pizza teams)** nổi tiếng của họ, nơi không có đội nào nên lớn đến mức không thể được nuôi bằng hai chiếc pizza. Động lực này cho các đội nhỏ sở hữu toàn bộ vòng đời của các dịch vụ của họ là một lý do chính tại sao Amazon đã phát triển Amazon Web Services. Họ cần tạo ra các công cụ để cho phép các đội của họ tự túc.
+
+Netflix đã học hỏi từ ví dụ này, và đảm bảo rằng ngay từ đầu họ đã tự cấu trúc xung quanh các đội nhỏ, độc lập, để các dịch vụ họ tạo ra cũng sẽ độc lập với nhau. Điều này đảm bảo rằng kiến trúc của hệ thống được tối ưu hóa cho tốc độ thay đổi. Hiệu quả, Netflix đã thiết kế cấu trúc tổ chức cho kiến trúc hệ thống mà họ muốn.
+
+#### **Chúng ta có thể làm gì với điều này? (What Can We Do with This?)**
+
+Vì vậy, bằng chứng, cả giai thoại và thực nghiệm, đều chỉ ra rằng cấu trúc tổ chức của chúng ta có ảnh hưởng mạnh mẽ đến bản chất (và chất lượng) của các hệ thống chúng ta cung cấp. Vậy sự hiểu biết này giúp chúng ta như thế nào? Hãy xem xét một vài tình huống tổ chức khác nhau và hiểu mỗi tình huống có thể có tác động gì đến thiết kế hệ thống của chúng ta.
+
+##### **Thích ứng với các Lối đi Giao tiếp (Adapting to Communication Pathways)**
+
+Trước tiên hãy xem xét một đội đơn giản, duy nhất. Họ chịu trách nhiệm về mọi khía cạnh của thiết kế và triển khai hệ thống. Họ có thể có giao tiếp thường xuyên, chi tiết. Hãy tưởng tượng rằng đội này chịu trách nhiệm về một dịch vụ duy nhất—chẳng hạn, dịch vụ danh mục của cửa hàng âm nhạc của chúng ta. Bây giờ hãy xem xét bên trong một dịch vụ: rất nhiều các lệnh gọi phương thức hoặc hàm chi tiết. Như chúng ta đã thảo luận trước đây, chúng ta nhằm mục đích đảm bảo các dịch vụ của mình được phân tách sao cho tốc độ thay đổi bên trong một dịch vụ cao hơn nhiều so với tốc độ thay đổi giữa các dịch vụ. Đội duy nhất này, với khả năng giao tiếp chi tiết, phù hợp tốt với các lối đi giao tiếp của mã trong dịch vụ.
+
+Đội duy nhất này thấy dễ dàng giao tiếp về các thay đổi và tái cấu trúc được đề xuất, và thường có một cảm giác sở hữu tốt.
+
+Bây giờ hãy tưởng tượng một kịch bản khác. Thay vì một đội duy nhất, được đặt cùng một chỗ sở hữu dịch vụ danh mục của chúng ta, giả sử rằng các đội ở Anh và Ấn Độ đều đang tích cực tham gia vào việc thay đổi một dịch vụ—thực chất là có quyền sở hữu chung dịch vụ. Các ranh giới địa lý và múi giờ ở đây làm cho việc giao tiếp chi tiết giữa các đội đó trở nên khó khăn. Thay vào đó, họ dựa vào giao tiếp thô hơn qua hội nghị video và email. Việc một thành viên đội ở Anh thực hiện một tái cấu trúc đơn giản một cách tự tin có dễ dàng không? Chi phí giao tiếp trong một đội phân tán về mặt địa lý cao hơn, và do đó chi phí phối hợp các thay đổi cao hơn.
+
+Khi chi phí phối hợp thay đổi tăng lên, một trong hai điều sẽ xảy ra. Hoặc mọi người tìm cách giảm chi phí phối hợp/giao tiếp, hoặc họ ngừng thực hiện các thay đổi. Điều sau chính xác là cách chúng ta kết thúc với các `codebase` lớn, khó bảo trì.
+
+Tôi nhớ lại một dự án khách hàng tôi đã làm việc, nơi quyền sở hữu một dịch vụ duy nhất được chia sẻ giữa hai địa điểm địa lý. Cuối cùng, mỗi địa điểm bắt đầu chuyên môn hóa công việc mà nó xử lý. Điều này cho phép nó sở hữu một phần của `codebase`, trong đó nó có thể có chi phí thay đổi dễ dàng hơn. Các đội sau đó có giao tiếp thô hơn về cách hai phần liên quan với nhau; hiệu quả, các lối đi giao tiếp có thể thực hiện được trong cấu trúc tổ chức đã khớp với API thô tạo thành ranh giới giữa hai nửa của `codebase`.
+
+Vậy điều này để lại chúng ta ở đâu khi xem xét việc phát triển thiết kế dịch vụ của riêng mình? Chà, tôi sẽ đề nghị rằng các ranh giới địa lý giữa những người tham gia vào việc phát triển một hệ thống có thể là một cách tuyệt vời để thúc đẩy khi nào các dịch vụ nên được phân tách, và nói chung, bạn nên tìm cách gán quyền sở hữu một dịch vụ cho một đội duy nhất, được đặt cùng một chỗ, người có thể giữ chi phí thay đổi thấp.
+
+Có lẽ tổ chức của bạn quyết định rằng họ muốn tăng số lượng người làm việc trong dự án của bạn bằng cách mở một văn phòng ở một quốc gia khác. Tại thời điểm này, hãy suy nghĩ tích cực về những phần nào của hệ thống của bạn có thể được chuyển đi. Có lẽ đây là điều thúc đẩy các quyết định của bạn về những đường nối nào cần tách ra tiếp theo.
+
+Cũng đáng lưu ý tại thời điểm này rằng, ít nhất là dựa trên các quan sát của các tác giả của báo cáo *Exploring the Duality Between Product and Organizational Architectures* được tham chiếu trước đó, nếu tổ chức xây dựng hệ thống được ghép nối lỏng lẻo hơn (ví dụ, bao gồm các đội phân tán về mặt địa lý), các hệ thống được xây dựng có xu hướng hướng tới việc có tính `module` hơn, và do đó hy vọng là ít ghép nối hơn. Xu hướng của một đội duy nhất sở hữu nhiều dịch vụ nghiêng về tích hợp chặt chẽ hơn là rất khó để duy trì trong một tổ chức phân tán hơn.
+
+##### **Quyền sở hữu Dịch vụ (Service Ownership)**
+
+Ý tôi là gì khi nói về **quyền sở hữu dịch vụ**? Nói chung, điều đó có nghĩa là đội sở hữu một dịch vụ chịu trách nhiệm thực hiện các thay đổi đối với dịch vụ đó. Đội nên cảm thấy tự do tái cấu trúc mã theo bất kỳ cách nào họ muốn, miễn là thay đổi đó không làm hỏng các dịch vụ tiêu thụ. Đối với nhiều đội, quyền sở hữu mở rộng đến tất cả các khía cạnh của dịch vụ, từ việc tìm kiếm các yêu cầu đến việc xây dựng, triển khai và bảo trì ứng dụng. Mô hình này đặc biệt phổ biến với microservices, nơi một đội nhỏ dễ dàng sở hữu một dịch vụ nhỏ hơn. Mức độ sở hữu tăng lên này dẫn đến quyền tự chủ và tốc độ giao hàng tăng lên. Việc có một đội chịu trách nhiệm triển khai và bảo trì ứng dụng có nghĩa là họ có động lực để tạo ra các dịch vụ dễ triển khai; nghĩa là, những lo ngại về việc "ném một cái gì đó qua tường" tan biến khi không có ai để ném nó cho!
+
+Mô hình này chắc chắn là một mô hình tôi ưa thích. Nó đẩy các quyết định đến những người có khả năng đưa ra chúng tốt nhất, trao cho đội cả sức mạnh và quyền tự chủ tăng lên, nhưng cũng làm cho họ phải chịu trách nhiệm về công việc của mình. Tôi đã thấy quá nhiều nhà phát triển giao hệ thống của họ cho các giai đoạn kiểm thử hoặc triển khai và nghĩ rằng công việc của họ đã hoàn thành tại thời điểm đó.
+
+*(Phần tiếp theo sẽ khám phá "Drivers for Shared Services".)*
+
+---
+[^1]: Và tất cả chúng ta đều biết Windows Vista khá dễ bị lỗi
+
+Chắc chắn rồi! Chúng ta sẽ tiếp tục khám phá các động lực đằng sau việc sở hữu dịch vụ dùng chung và các mô hình thay thế.
+
+---
+
+#### **Động lực cho các Dịch vụ Dùng chung (Drivers for Shared Services)**
+
+Tôi đã thấy nhiều đội áp dụng một mô hình **sở hữu dịch vụ dùng chung (shared service ownership)**. Tôi thấy cách tiếp cận này là dưới mức tối ưu, vì những lý do đã được thảo luận. Tuy nhiên, các động lực khiến mọi người chọn các dịch vụ dùng chung là quan trọng để hiểu, đặc biệt là khi chúng ta có thể tìm thấy một số mô hình thay thế hấp dẫn có thể giải quyết các mối quan tâm cơ bản của mọi người.
+
+##### **Quá khó để Chia tách (Too Hard to Split)**
+
+Rõ ràng, một trong những lý do bạn có thể thấy mình có một dịch vụ duy nhất được sở hữu bởi nhiều hơn một đội là chi phí chia tách dịch vụ quá cao, hoặc có lẽ tổ chức của bạn không thấy được điểm của nó. Đây là một hiện tượng phổ biến với các hệ thống `monolithic` lớn. Nếu đây là thách thức chính bạn phải đối mặt, thì tôi hy vọng một số lời khuyên được đưa ra trong **Chương 5** sẽ hữu ích. Bạn cũng có thể xem xét việc hợp nhất các đội lại với nhau, để phù hợp hơn với kiến trúc.
+
+##### **Đội Tính năng (Feature Teams)**
+
+Ý tưởng về **đội tính năng (feature teams)** (hay còn gọi là các đội dựa trên tính năng) là một đội nhỏ thúc đẩy sự phát triển của một tập hợp các tính năng, triển khai tất cả các chức năng cần thiết ngay cả khi nó cắt ngang qua các ranh giới thành phần (hoặc thậm chí dịch vụ). Các mục tiêu của đội tính năng là hợp lý. Cấu trúc này cho phép đội duy trì sự tập trung vào kết quả cuối cùng và đảm bảo rằng công việc được kết nối, tránh được một số thách thức của việc cố gắng phối hợp các thay đổi trên nhiều đội khác nhau.
+
+Trong nhiều tình huống, đội tính năng là một phản ứng đối với các tổ chức CNTT truyền thống nơi cấu trúc đội được điều chỉnh xung quanh các ranh giới kỹ thuật. Ví dụ, bạn có thể có một đội chịu trách nhiệm về giao diện người dùng, một đội khác chịu trách nhiệm về logic ứng dụng, và một đội thứ ba xử lý cơ sở dữ liệu. Trong môi trường này, một đội tính năng là một bước tiến đáng kể, vì nó hoạt động trên tất cả các lớp này để cung cấp chức năng.
+
+Với việc áp dụng toàn bộ các đội tính năng, tất cả các dịch vụ có thể được coi là dùng chung. Mọi người đều có thể thay đổi mọi dịch vụ, mọi đoạn mã. Vai trò của những người **giữ gìn dịch vụ (service custodians)** ở đây trở nên phức tạp hơn nhiều, nếu vai trò đó tồn tại. Thật không may, tôi hiếm khi thấy những người giữ gìn hoạt động ở những nơi áp dụng mẫu hình này, dẫn đến các loại vấn đề chúng ta đã thảo luận trước đó.
+
+Nhưng hãy xem xét lại microservices là gì: các dịch vụ được mô hình hóa theo một **miền nghiệp vụ**, không phải là một miền kỹ thuật. Và nếu đội của chúng ta sở hữu bất kỳ dịch vụ nào cũng được điều chỉnh tương tự dọc theo miền nghiệp vụ, thì có nhiều khả năng đội sẽ có thể duy trì sự tập trung vào khách hàng, và xem xét nhiều hơn về sự phát triển tính năng, bởi vì nó có một sự hiểu biết và quyền sở hữu toàn diện về tất cả công nghệ liên quan đến một dịch vụ.
+
+Tất nhiên, các thay đổi cắt ngang có thể xảy ra, nhưng khả năng của chúng bị giảm đáng kể bởi việc chúng ta tránh các đội hướng công nghệ.
+
+##### **Nút thắt cổ chai trong Phân phối (Delivery Bottlenecks)**
+
+Một lý do chính khiến mọi người chuyển sang các dịch vụ dùng chung là để tránh các **nút thắt cổ chai trong phân phối**. Điều gì sẽ xảy ra nếu có một lượng lớn các thay đổi cần được thực hiện trong một dịch vụ duy nhất? Hãy tưởng tượng rằng chúng ta đang triển khai khả năng cho một khách hàng xem thể loại của một bản nhạc trên các sản phẩm của mình, cũng như thêm một loại hàng mới: nhạc chuông ảo cho điện thoại di động. Đội ngũ trang web cần thực hiện một thay đổi để hiển thị thông tin thể loại, với đội ngũ ứng dụng di động đang làm việc để cho phép người dùng duyệt, xem trước và mua nhạc chuông. Cả hai thay đổi đều cần được thực hiện đối với dịch vụ danh mục, nhưng không may một nửa đội bị cúm, và nửa còn lại đang mắc kẹt trong việc chẩn đoán một lỗi sản xuất.
+
+Chúng ta có một vài tùy chọn không liên quan đến các dịch vụ dùng chung để tránh tình huống này.
+*   **Đầu tiên** là chỉ cần chờ đợi. Các đội trang web và ứng dụng di động chuyển sang một cái gì đó khác. Tùy thuộc vào mức độ quan trọng của tính năng, hoặc thời gian trì hoãn có thể là bao lâu, điều này có thể ổn hoặc có thể là một vấn đề lớn.
+*   Bạn có thể thay vào đó **thêm người vào đội danh mục** để giúp họ xử lý công việc của mình nhanh hơn. Càng chuẩn hóa `technology stack` và các thành ngữ lập trình được sử dụng trên toàn hệ thống của bạn, càng dễ dàng cho những người khác thực hiện các thay đổi trong các dịch vụ của bạn. Tất nhiên, mặt trái, như chúng ta đã thảo luận trước đó, là việc tiêu chuẩn hóa có xu hướng làm giảm khả năng của một đội trong việc áp dụng giải pháp phù hợp cho công việc, và có thể dẫn đến các loại kém hiệu quả khác. Nếu đội ở phía bên kia hành tinh, tuy nhiên, điều này có thể là không thể.
+*   **Một tùy chọn khác** có thể là chia danh mục thành một danh mục âm nhạc chung riêng biệt và một danh mục nhạc chuông. Nếu thay đổi đang được thực hiện để hỗ trợ nhạc chuông là khá nhỏ, và khả năng đây là một lĩnh vực mà chúng ta sẽ phát triển mạnh mẽ trong tương lai cũng khá thấp, điều này có thể còn quá sớm. Mặt khác, nếu có 10 tuần tính năng liên quan đến nhạc chuông bị dồn lại, việc tách dịch vụ ra có thể có ý nghĩa, với đội di động đảm nhận quyền sở hữu.
+
+Tuy nhiên, có một mô hình khác có thể hoạt động tốt cho chúng ta.
+
+#### **Mã nguồn mở Nội bộ (Internal Open Source)**
+
+Vậy điều gì sẽ xảy ra nếu chúng ta đã cố gắng hết sức, nhưng chúng ta không thể tìm ra cách nào để vượt qua việc có một vài dịch vụ dùng chung? Tại thời điểm này, việc chấp nhận đúng đắn mô hình **mã nguồn mở nội bộ** có thể rất có ý nghĩa.
+
+Với mã nguồn mở thông thường, một nhóm nhỏ người được coi là những người **đóng góp cốt lõi (core committers)**. Họ là những người **giữ gìn (custodians)** mã nguồn. Nếu bạn muốn một thay đổi cho một dự án mã nguồn mở, bạn hoặc là yêu cầu một trong những người đóng góp thực hiện thay đổi cho bạn, hoặc bạn tự mình thực hiện thay đổi và gửi cho họ một `pull request`. Những người đóng góp cốt lõi vẫn chịu trách nhiệm về `codebase`; họ là những người chủ sở hữu.
+
+Bên trong tổ chức, mẫu hình này cũng có thể hoạt động tốt. Có lẽ những người đã làm việc trên dịch vụ ban đầu không còn ở trong một đội cùng nhau; có lẽ bây giờ họ đã rải rác khắp tổ chức. Chà, nếu họ vẫn có quyền `commit`, bạn có thể tìm họ và nhờ họ giúp đỡ, có lẽ là lập trình cặp với họ, hoặc nếu bạn có các công cụ phù hợp, bạn có thể gửi cho họ một `pull request`.
+
+##### **Vai trò của những Người giữ gìn (Role of the Custodians)**
+
+Chúng ta vẫn muốn các dịch vụ của mình hợp lý. Chúng ta muốn mã có chất lượng tốt, và bản thân dịch vụ thể hiện một sự nhất quán nào đó trong cách nó được ghép lại với nhau. Chúng ta cũng muốn đảm bảo rằng các thay đổi được thực hiện bây giờ không làm cho các thay đổi được lên kế hoạch trong tương lai khó hơn nhiều so với chúng cần phải có. Điều này có nghĩa là chúng ta cần phải áp dụng các mẫu tương tự được sử dụng trong mã nguồn mở thông thường trong nội bộ, điều này có nghĩa là tách ra một nhóm những người đóng góp đáng tin cậy (đội cốt lõi), và những người đóng góp không đáng tin cậy (những người từ bên ngoài đội gửi các thay đổi).
+
+Đội cốt lõi cần phải có một cách nào đó để xem xét và phê duyệt các thay đổi. Họ cần phải đảm bảo rằng các thay đổi nhất quán về mặt thành ngữ—nghĩa là, chúng tuân theo các hướng dẫn mã hóa chung của phần còn lại của `codebase`. Do đó, những người thực hiện việc xem xét sẽ phải dành thời gian làm việc với những người gửi để đảm bảo rằng thay đổi có chất lượng đủ tốt.
+
+Những người gác cổng tốt đã bỏ rất nhiều công sức vào việc này, giao tiếp rõ ràng với những người gửi và khuyến khích hành vi tốt. Những người gác cổng tồi có thể sử dụng điều này như một cái cớ để thực thi quyền lực đối với người khác hoặc có những cuộc chiến tôn giáo về các quyết định kỹ thuật tùy tiện. Đã thấy cả hai bộ hành vi, tôi có thể nói cho bạn một điều rõ ràng: dù thế nào đi nữa, nó cũng mất thời gian. Khi xem xét việc cho phép những người đóng góp không đáng tin cậy gửi các thay đổi vào `codebase` của bạn, bạn phải quyết định xem chi phí của việc trở thành một người gác cổng có đáng để gặp rắc rối hay không: liệu đội cốt lõi có thể làm những việc tốt hơn với thời gian họ dành cho việc xem xét các bản vá không?
+
+##### **Sự trưởng thành (Maturity)**
+
+Một dịch vụ càng ít ổn định hoặc trưởng thành, càng khó để cho phép những người bên ngoài đội cốt lõi gửi các bản vá. Trước khi xương sống chính của một dịch vụ được đặt ra, đội có thể không biết *tốt* trông như thế nào, và do đó có thể gặp khó khăn trong việc biết một bài nộp tốt trông như thế nào. Trong giai đoạn này, bản thân dịch vụ đang trải qua một mức độ thay đổi cao.
+
+Hầu hết các dự án mã nguồn mở có xu hướng không nhận các bài nộp từ một nhóm người đóng góp không đáng tin cậy rộng hơn cho đến khi cốt lõi của phiên bản đầu tiên được hoàn thành. Việc tuân theo một mô hình tương tự cho các tổ chức của riêng bạn là hợp lý. Nếu một dịch vụ khá trưởng thành, và hiếm khi được thay đổi—ví dụ, dịch vụ giỏ hàng của chúng ta—thì có lẽ đó là thời điểm để mở nó cho các đóng góp khác.
+
+##### **Công cụ (Tooling)**
+
+Để hỗ trợ tốt nhất một mô hình mã nguồn mở nội bộ, bạn sẽ cần một số công cụ tại chỗ. Việc sử dụng một công cụ kiểm soát phiên bản phân tán với khả năng cho mọi người gửi các `pull request` (hoặc một cái gì đó tương tự) là quan trọng. Tùy thuộc vào quy mô của tổ chức, bạn cũng có thể cần các công cụ để cho phép thảo luận và phát triển các yêu cầu vá lỗi; điều này có thể có hoặc không có nghĩa là một hệ thống xem xét mã đầy đủ, nhưng khả năng bình luận nội tuyến trên các bản vá là rất hữu ích. Cuối cùng, bạn sẽ cần phải làm cho nó rất dễ dàng cho một người đóng góp để xây dựng và triển khai phần mềm của bạn, và làm cho nó có sẵn cho những người khác. Điều này thường liên quan đến việc có các đường ống xây dựng và triển khai được xác định rõ ràng và các kho lưu trữ tạo tác tập trung.
+
+*(Phần tiếp theo sẽ khám phá mối quan hệ giữa "Bounded Contexts and Team Structures".)*
+
+Chắc chắn rồi! Chúng ta sẽ tiếp tục với các phần còn lại của Chương 10, tập trung vào cách cấu trúc đội nhóm và đối phó với các dịch vụ không còn được bảo trì tích cực.
+
+---
+
+#### **Bounded Contexts và Cấu trúc Đội (Bounded Contexts and Team Structures)**
+
+Như đã đề cập trước đây, chúng ta tìm cách vẽ các ranh giới dịch vụ của mình xung quanh các **bounded context**. Do đó, theo đó, chúng ta cũng muốn các đội của mình được điều chỉnh dọc theo các `bounded context`. Điều này có nhiều lợi ích.
+*   **Thứ nhất**, một đội sẽ thấy dễ dàng hơn để nắm bắt các khái niệm miền nghiệp vụ trong một `bounded context`, vì chúng có liên quan với nhau.
+*   **Thứ hai**, các dịch vụ trong một `bounded context` có nhiều khả năng là các dịch vụ nói chuyện với nhau, làm cho việc thiết kế hệ thống và phối hợp phát hành dễ dàng hơn.
+*   **Cuối cùng**, về cách đội giao hàng tương tác với các bên liên quan kinh doanh, việc đội tạo ra các mối quan hệ tốt với một hoặc hai chuyên gia trong lĩnh vực đó trở nên dễ dàng hơn.
+
+#### **Dịch vụ Mồ côi? (The Orphaned Service?)**
+
+Vậy còn những dịch vụ không còn được bảo trì tích cực thì sao? Khi chúng ta chuyển sang các kiến trúc chi tiết hơn, bản thân các dịch vụ trở nên nhỏ hơn. Một trong những mục tiêu của các dịch vụ nhỏ hơn, như chúng ta đã thảo luận, là thực tế là chúng đơn giản hơn. Các dịch vụ đơn giản hơn với ít chức năng hơn có thể không cần thay đổi trong một thời gian. Hãy xem xét dịch vụ giỏ hàng khiêm tốn, cung cấp một số khả năng khá khiêm tốn: Thêm vào Giỏ hàng, Xóa khỏi Giỏ hàng, v.v. Hoàn toàn có thể hình dung rằng dịch vụ này có thể không cần phải thay đổi trong nhiều tháng sau khi được viết lần đầu, ngay cả khi việc phát triển tích cực vẫn đang diễn ra. Điều gì xảy ra ở đây? Ai sở hữu dịch vụ này?
+
+Nếu cấu trúc đội của bạn được điều chỉnh dọc theo các `bounded context` của tổ chức bạn, thì ngay cả những dịch vụ không được thay đổi thường xuyên vẫn có một chủ sở hữu trên thực tế. Hãy tưởng tượng một đội được điều chỉnh với `context` bán hàng web tiêu dùng. Họ có thể xử lý trang web, giỏ hàng, và các dịch vụ đề xuất. Ngay cả khi dịch vụ giỏ hàng đã không được thay đổi trong nhiều tháng, việc thực hiện thay đổi sẽ tự nhiên thuộc về đội này. Tất nhiên, một trong những lợi ích của microservices là nếu đội cần thay đổi dịch vụ để thêm một tính năng mới và không thích nó, việc viết lại nó sẽ không mất quá nhiều thời gian.
+
+Điều đó nói rằng, nếu bạn đã áp dụng một cách tiếp cận thực sự đa ngôn ngữ (`polyglot`), sử dụng nhiều `technology stack`, thì những thách thức của việc thực hiện các thay đổi đối với một dịch vụ mồ côi có thể trở nên phức tạp hơn nếu đội của bạn không còn biết `tech stack` đó nữa.
+
+#### **Nghiên cứu Điển hình: RealEstate.com.au**
+
+Hoạt động kinh doanh cốt lõi của REA là bất động sản. Nhưng điều này bao gồm nhiều khía cạnh khác nhau, mỗi khía cạnh hoạt động như một **lĩnh vực kinh doanh (line of business - LOB)** duy nhất. Ví dụ, một LOB xử lý bất động sản nhà ở tại Úc, một LOB khác xử lý thương mại, trong khi một LOB khác có thể liên quan đến một trong những hoạt động kinh doanh ở nước ngoài của REA. Các LOB này có các đội giao hàng CNTT (hoặc các **đội (squads)**) liên quan đến chúng; một số có thể chỉ có một đội duy nhất, trong khi đội lớn nhất có bốn. Vì vậy, đối với bất động sản nhà ở, có nhiều đội tham gia vào việc tạo ra trang web và các dịch vụ niêm yết để cho phép mọi người duyệt bất động sản. Mọi người luân chuyển giữa các đội này thỉnh thoảng, nhưng có xu hướng ở lại trong LOB đó trong một thời gian dài, đảm bảo rằng các thành viên trong đội có thể xây dựng một nhận thức mạnh mẽ về phần đó của miền nghiệp vụ. Điều này lần lượt giúp giao tiếp giữa các bên liên quan kinh doanh khác nhau và đội cung cấp các tính năng cho họ.
+
+Mỗi đội trong một LOB được mong đợi sẽ sở hữu toàn bộ vòng đời của các dịch vụ mà nó tạo ra, bao gồm cả việc xây dựng, kiểm thử và phát hành, hỗ trợ, và thậm chí cả việc ngừng hoạt động. Một đội dịch vụ giao hàng cốt lõi cung cấp lời khuyên và hướng dẫn cho các đội này, cũng như các công cụ để giúp họ hoàn thành công việc. Một văn hóa tự động hóa mạnh mẽ là chìa khóa, và REA sử dụng rất nhiều AWS như một phần quan trọng trong việc cho phép các đội trở nên tự chủ hơn. Hình 10-1 minh họa tất cả điều này hoạt động như thế nào.
+
+![alt text](<images/Screenshot from 2025-09-29 13-22-16.png>)
+
+**Hình 10-1.** *Tổng quan về cấu trúc tổ chức và đội của Realestate.com.au, và sự phù hợp với kiến trúc*
+
+Không chỉ là tổ chức giao hàng được điều chỉnh theo cách doanh nghiệp hoạt động. Nó còn mở rộng đến cả kiến trúc. Một ví dụ về điều này là các phương pháp tích hợp.
+*   **Trong một LOB**, tất cả các dịch vụ đều có thể tự do nói chuyện với nhau theo bất kỳ cách nào họ thấy phù hợp, do các đội đóng vai trò là người giữ gìn của họ quyết định.
+*   Nhưng **giữa các LOB**, tất cả giao tiếp đều được bắt buộc phải là **xử lý hàng loạt bất đồng bộ (asynchronous batch)**, một trong số ít các quy tắc cứng rắn của đội ngũ kiến trúc rất nhỏ.
+
+Giao tiếp thô này khớp với giao tiếp thô tồn tại giữa các bộ phận khác nhau của chính doanh nghiệp. Bằng cách khăng khăng rằng nó là xử lý hàng loạt, mỗi LOB có rất nhiều tự do trong cách nó hoạt động và tự quản lý. Nó có thể có đủ khả năng để gỡ bỏ các dịch vụ của mình bất cứ khi nào nó muốn, biết rằng miễn là nó có thể đáp ứng được việc tích hợp hàng loạt với các bộ phận khác của doanh nghiệp và các bên liên quan kinh doanh của riêng mình, sẽ không ai quan tâm.
+
+Cấu trúc này đã cho phép sự tự chủ đáng kể không chỉ của các đội mà còn của các bộ phận khác nhau của doanh nghiệp. Từ một vài dịch vụ vài năm trước, REA hiện có hàng trăm, với nhiều dịch vụ hơn cả người, và đang phát triển với tốc độ nhanh chóng. Khả năng cung cấp sự thay đổi đã giúp công ty đạt được thành công đáng kể trên thị trường địa phương đến mức họ đang mở rộng ra nước ngoài. Và, điều đáng mừng nhất, từ việc nói chuyện với những người ở đó, tôi có ấn tượng rằng cả kiến trúc và cấu trúc tổ chức như hiện tại chỉ là phiên bản lặp lại mới nhất thay vì là đích đến. Tôi dám nói rằng trong năm năm nữa, REA sẽ trông rất khác.
+
+Những tổ chức đủ linh hoạt để thay đổi không chỉ kiến trúc hệ thống của họ mà cả cấu trúc tổ chức của họ có thể mang lại những lợi ích to lớn về mặt cải thiện quyền tự chủ của các đội và thời gian đưa các tính năng và chức năng mới ra thị trường nhanh hơn. REA chỉ là một trong số các tổ chức đang nhận ra rằng kiến trúc hệ thống không tồn tại trong một môi trường chân không.
+
+#### **Luật Conway Ngược (Conway’s Law in Reverse)**
+
+Cho đến nay, chúng ta đã nói về cách tổ chức ảnh hưởng đến thiết kế hệ thống. Nhưng còn ngược lại thì sao? Cụ thể là, một thiết kế hệ thống có thể thay đổi tổ chức không? Mặc dù tôi chưa thể tìm thấy chất lượng bằng chứng tương tự để hỗ trợ ý tưởng rằng luật Conway hoạt động ngược lại, tôi đã thấy nó một cách giai thoại.
+
+Có lẽ ví dụ tốt nhất là một khách hàng tôi đã làm việc cùng nhiều năm trước. Quay trở lại những ngày khi Web còn khá sơ khai, và Internet được xem như một thứ gì đó đến trên một đĩa mềm AOL qua đường bưu điện, công ty này là một công ty in ấn lớn có một trang web nhỏ, khiêm tốn. Họ có một trang web vì đó là điều cần phải làm, nhưng trong kế hoạch lớn của mọi thứ, nó không quan trọng đối với cách doanh nghiệp hoạt động. Khi hệ thống ban đầu được tạo ra, một quyết định kỹ thuật khá tùy tiện đã được đưa ra về cách hệ thống sẽ hoạt động.
+
+Nội dung cho hệ thống này được lấy từ nhiều nguồn, nhưng phần lớn đến từ các bên thứ ba đang đặt quảng cáo để công chúng xem. Có một hệ thống đầu vào cho phép nội dung được tạo bởi các bên thứ ba trả tiền, một hệ thống trung tâm lấy dữ liệu đó và làm phong phú nó theo nhiều cách khác nhau, và một hệ thống đầu ra tạo ra trang web cuối cùng mà công chúng có thể duyệt.
+
+Liệu các quyết định thiết kế ban đầu có đúng vào thời điểm đó hay không là một cuộc trò chuyện cho các nhà sử học, nhưng nhiều năm sau, công ty đã thay đổi khá nhiều và tôi cùng nhiều đồng nghiệp của mình bắt đầu tự hỏi liệu thiết kế hệ thống có phù hợp với trạng thái hiện tại của công ty hay không. Hoạt động kinh doanh in ấn vật lý của nó đã giảm đáng kể, và doanh thu và do đó các hoạt động kinh doanh của tổ chức hiện đang bị chi phối bởi sự hiện diện trực tuyến của nó.
+
+Những gì chúng tôi thấy vào thời điểm đó là một tổ chức được điều chỉnh chặt chẽ theo hệ thống ba phần này. Ba kênh hoặc bộ phận trong phía CNTT của doanh nghiệp phù hợp với mỗi phần đầu vào, lõi và đầu ra của doanh nghiệp. Trong các kênh đó, có các đội giao hàng riêng biệt. Điều tôi không nhận ra vào thời điểm đó là các cấu trúc tổ chức này không có trước thiết kế hệ thống, mà thực sự đã phát triển xung quanh nó. Khi mảng in ấn của doanh nghiệp giảm đi, và mảng kỹ thuật số của doanh nghiệp phát triển, thiết kế hệ thống đã vô tình đặt ra con đường cho cách tổ chức phát triển.
+
+Cuối cùng, chúng tôi nhận ra rằng bất kể những thiếu sót của thiết kế hệ thống là gì, chúng tôi sẽ phải thực hiện các thay đổi đối với cấu trúc tổ chức để tạo ra một sự thay đổi. Nhiều năm sau, quá trình đó vẫn đang được tiến hành!
+
+#### **Con người (People)**
+
+> *No matter how it looks at first, it’s always a people problem.*
+>
+> —Gerry Weinberg, *The Second Law of Consulting*
+
+Chúng ta phải chấp nhận rằng trong một môi trường microservice, việc một nhà phát triển chỉ nghĩ về việc viết mã trong thế giới nhỏ bé của riêng mình là khó khăn hơn. Anh ta phải nhận thức rõ hơn về những tác động của những thứ như các cuộc gọi qua các ranh giới mạng, hoặc những tác động của sự thất bại. Chúng ta cũng đã nói về khả năng của microservices để giúp việc thử nghiệm các công nghệ mới, từ các kho dữ liệu đến các ngôn ngữ, trở nên dễ dàng hơn. Nhưng nếu bạn đang chuyển từ một thế giới nơi bạn có một hệ thống `monolithic`, nơi phần lớn các nhà phát triển của bạn chỉ phải sử dụng một ngôn ngữ và hoàn toàn không biết gì về các mối quan tâm hoạt động, thì việc ném họ vào thế giới microservices có thể là một sự thức tỉnh thô bạo.
+
+Tương tự như vậy, việc đẩy quyền lực vào các đội phát triển để tăng quyền tự chủ có thể đầy rẫy những khó khăn. Những người trong quá khứ đã ném công việc qua tường cho người khác đã quen với việc có người khác để đổ lỗi, và có thể không cảm thấy thoải mái khi hoàn toàn chịu trách nhiệm về công việc của mình. Bạn thậm chí có thể tìm thấy các rào cản hợp đồng đối với việc để các nhà phát triển của bạn mang theo máy nhắn tin hỗ trợ cho các hệ thống họ hỗ trợ!
+
+Mặc dù cuốn sách này chủ yếu nói về công nghệ, con người không chỉ là một vấn đề phụ cần xem xét; họ là những người đã xây dựng những gì bạn có bây giờ, và sẽ xây dựng những gì sẽ xảy ra tiếp theo. Việc đưa ra một tầm nhìn về cách mọi thứ nên được thực hiện mà không xem xét nhân viên hiện tại của bạn sẽ cảm thấy như thế nào về điều này hoặc không xem xét những khả năng họ có có khả năng dẫn đến một nơi tồi tệ.
+
+Mỗi tổ chức đều có những động lực riêng xung quanh chủ đề này. Hãy hiểu khẩu vị thay đổi của nhân viên của bạn. Đừng đẩy họ quá nhanh! Có lẽ bạn vẫn có một đội riêng xử lý hỗ trợ tuyến đầu hoặc triển khai trong một thời gian ngắn, cho các nhà phát triển của bạn thời gian để điều chỉnh với các thực hành mới khác. Tuy nhiên, bạn có thể phải chấp nhận rằng bạn cần các loại người khác nhau trong tổ chức của mình để làm tất cả những điều này. Bất kể cách tiếp cận của bạn là gì, hãy hiểu rằng bạn cần phải rõ ràng trong việc trình bày các trách nhiệm của mọi người của bạn trong một thế giới microservices, và cũng rõ ràng tại sao những trách nhiệm đó lại quan trọng đối với bạn. Điều này có thể giúp bạn thấy những khoảng trống kỹ năng của mình có thể là gì, và suy nghĩ về cách thu hẹp chúng. Đối với nhiều người, đây sẽ là một hành trình khá đáng sợ. Chỉ cần nhớ rằng nếu không có mọi người đồng lòng, bất kỳ thay đổi nào bạn muốn thực hiện đều có thể bị thất bại ngay từ đầu.
+
+#### **Tóm tắt (Summary)**
+
+Luật Conway nêu bật những nguy cơ của việc cố gắng thực thi một thiết kế hệ thống không phù hợp với tổ chức. Điều này dẫn chúng ta đến việc cố gắng điều chỉnh quyền sở hữu dịch vụ cho các đội được đặt cùng một chỗ, mà bản thân chúng được điều chỉnh xung quanh cùng các `bounded context` của tổ chức. Khi cả hai không phù hợp, chúng ta sẽ có những điểm căng thẳng như đã nêu trong suốt chương này. Bằng cách nhận ra mối liên kết giữa hai điều này, chúng ta sẽ đảm bảo rằng hệ thống chúng ta đang cố gắng xây dựng có ý nghĩa đối với tổ chức mà chúng ta đang xây dựng nó cho.
+
+Một số những gì chúng ta đã đề cập ở đây đã chạm đến những thách thức của việc làm việc với các tổ chức ở quy mô lớn. Tuy nhiên, có những cân nhắc kỹ thuật khác mà chúng ta cần lo lắng khi các hệ thống của chúng ta bắt đầu phát triển vượt ra ngoài một vài dịch vụ riêng biệt. Chúng ta sẽ giải quyết những vấn đề đó tiếp theo.
+
+Tuyệt vời! Chúng ta sẽ bước vào Chương 11: "Microservices ở Quy mô lớn (Microservices at Scale)". Chương này sẽ tập trung vào các thách thức và mẫu hình khi kiến trúc microservice của bạn phát triển về quy mô và độ phức tạp.
+
+---
+
+### **11. Microservices ở Quy mô lớn (Microservices at Scale)**
+
+Khi bạn đang xử lý các ví dụ nhỏ, đẹp mắt như trong sách, mọi thứ dường như đơn giản. Nhưng thế giới thực là một không gian phức tạp hơn. Điều gì sẽ xảy ra khi kiến trúc microservice của chúng ta phát triển từ những khởi đầu đơn giản, khiêm tốn thành một thứ gì đó phức tạp hơn? Điều gì sẽ xảy ra khi chúng ta phải xử lý sự cố của nhiều dịch vụ riêng biệt hoặc quản lý hàng trăm dịch vụ? Một số mẫu hình đối phó khi bạn có nhiều microservice hơn cả con người là gì? Hãy cùng tìm hiểu.
+
+#### **Thất bại có ở khắp mọi nơi (Failure Is Everywhere)**
+
+Chúng ta hiểu rằng mọi thứ có thể gặp sự cố. Đĩa cứng có thể hỏng. Phần mềm của chúng ta có thể bị treo. Và như bất kỳ ai đã đọc về **những ngụy biện của điện toán phân tán (fallacies of distributed computing)** đều có thể nói cho bạn biết, chúng ta biết rằng mạng là không đáng tin cậy. Chúng ta có thể cố gắng hết sức để hạn chế các nguyên nhân gây ra thất bại, nhưng ở một quy mô nhất định, thất bại trở thành điều không thể tránh khỏi. Ví dụ, ổ đĩa cứng hiện nay đáng tin cậy hơn bao giờ hết, nhưng cuối cùng chúng cũng sẽ hỏng. Càng có nhiều ổ đĩa cứng, khả năng xảy ra lỗi cho một đơn vị riêng lẻ càng cao; thất bại trở thành một sự chắc chắn về mặt thống kê ở quy mô lớn.
+
+Ngay cả đối với những người trong chúng ta không nghĩ đến quy mô cực lớn, nếu chúng ta có thể chấp nhận khả năng xảy ra thất bại, chúng ta sẽ tốt hơn. Ví dụ, nếu chúng ta có thể xử lý sự cố của một dịch vụ một cách duyên dáng, thì theo đó, chúng ta cũng có thể thực hiện các nâng cấp tại chỗ của một dịch vụ, vì một sự cố có kế hoạch dễ đối phó hơn nhiều so với một sự cố không có kế hoạch.
+
+Chúng ta cũng có thể dành ít thời gian hơn để cố gắng ngăn chặn điều không thể tránh khỏi, và dành nhiều thời gian hơn để đối phó với nó một cách duyên dáng. Tôi ngạc nhiên về số lượng các tổ chức đặt ra các quy trình và kiểm soát để cố gắng ngăn chặn sự cố xảy ra, nhưng lại ít hoặc không suy nghĩ gì về việc thực sự làm cho việc phục hồi sau sự cố trở nên dễ dàng hơn.
+
+Việc tích hợp giả định rằng mọi thứ có thể và sẽ thất bại dẫn bạn đến việc suy nghĩ khác về cách bạn giải quyết các vấn đề.
+
+Tôi đã thấy một ví dụ về tư duy này khi dành thời gian trong khuôn viên của Google nhiều năm trước. Trong khu vực lễ tân của một trong những tòa nhà ở Mountain View là một giá đỡ máy móc cũ, ở đó như một loại vật trưng bày. Tôi nhận thấy một vài điều.
+*   **Thứ nhất**, các máy chủ này không nằm trong các vỏ máy chủ, chúng chỉ là các bo mạch chủ trần được cắm vào giá đỡ.
+*   **Tuy nhiên, điều chính tôi nhận thấy** là các ổ đĩa cứng được gắn bằng **khóa dán velcro**. Tôi đã hỏi một trong những người Googler tại sao lại như vậy. "Ồ," anh ấy nói, "các ổ đĩa cứng hỏng nhiều đến mức chúng tôi không muốn chúng được bắt vít vào. Chúng tôi chỉ cần xé chúng ra, ném chúng vào thùng rác, và dán một cái mới vào."
+
+Vì vậy, hãy để tôi nhắc lại: ở quy mô lớn, ngay cả khi bạn mua thiết bị tốt nhất, phần cứng đắt nhất, bạn không thể tránh được thực tế là mọi thứ có thể và sẽ thất bại. Do đó, bạn cần phải giả định rằng thất bại có thể xảy ra. Nếu bạn xây dựng tư duy này vào mọi thứ bạn làm, và lên kế hoạch cho sự thất bại, bạn có thể đưa ra những sự đánh đổi khác nhau. Nếu bạn biết hệ thống của mình có thể xử lý thực tế rằng một máy chủ có thể và sẽ thất bại, tại sao lại phải chi nhiều tiền cho nó? Tại sao không sử dụng một bo mạch chủ trần với các thành phần rẻ hơn (và một ít velcro) như Google đã làm, thay vì lo lắng quá nhiều về khả năng phục hồi của một nút duy nhất?
+
+#### **Bao nhiêu là Quá nhiều? (How Much Is Too Much?)**
+
+Chúng ta đã đề cập đến chủ đề về các yêu cầu chức năng chéo (`cross-functional requirements`) trong **Chương 7**. Việc hiểu các yêu cầu chức năng chéo là tất cả về việc xem xét các khía cạnh như độ bền của dữ liệu, tính sẵn có của các dịch vụ, thông lượng, và độ trễ chấp nhận được của các dịch vụ. Nhiều kỹ thuật được đề cập trong chương này và những nơi khác nói về các cách tiếp cận để thực hiện các yêu cầu này, nhưng chỉ bạn mới biết chính xác các yêu cầu đó có thể là gì.
+
+Việc có một hệ thống tự động mở rộng quy mô (`autoscaling`) có khả năng phản ứng với tải tăng lên hoặc sự cố của các nút riêng lẻ có thể là tuyệt vời, nhưng có thể là quá mức cần thiết cho một hệ thống báo cáo chỉ cần chạy hai lần một tháng, nơi việc ngừng hoạt động trong một hoặc hai ngày không phải là một vấn đề lớn. Tương tự như vậy, việc tìm ra cách thực hiện các triển khai blue/green để loại bỏ thời gian ngừng hoạt động của một dịch vụ có thể có ý nghĩa đối với hệ thống thương mại điện tử trực tuyến của bạn, nhưng đối với cơ sở kiến thức nội bộ của công ty bạn, đó có lẽ là một bước đi quá xa.
+
+Việc biết bạn có thể chịu đựng được bao nhiêu thất bại, hoặc hệ thống của bạn cần nhanh đến mức nào, được thúc đẩy bởi người dùng của hệ thống của bạn. Điều đó lần lượt sẽ giúp bạn hiểu được các kỹ thuật nào sẽ có ý nghĩa nhất đối với bạn. Điều đó nói rằng, người dùng của bạn sẽ không phải lúc nào cũng có thể trình bày rõ ràng các yêu cầu chính xác là gì. Vì vậy, bạn cần phải đặt câu hỏi để giúp trích xuất thông tin đúng đắn, và giúp họ hiểu được chi phí tương đối của việc cung cấp các mức độ dịch vụ khác nhau.
+
+Như tôi đã đề cập trước đó, các yêu cầu chức năng chéo này có thể thay đổi từ dịch vụ này sang dịch vụ khác, nhưng tôi sẽ đề nghị định nghĩa một số chức năng chéo chung và sau đó ghi đè chúng cho các trường hợp sử dụng cụ thể. Khi xem xét liệu có và làm thế nào để mở rộng quy mô hệ thống của bạn để xử lý tải hoặc thất bại tốt hơn, hãy bắt đầu bằng cách cố gắng hiểu các yêu cầu sau:
+
+*   **Thời gian phản hồi/độ trễ (Response time/latency)**
+    Các hoạt động khác nhau nên mất bao lâu? Có thể hữu ích ở đây để đo lường điều này với các số lượng người dùng khác nhau để hiểu tải tăng lên sẽ ảnh hưởng đến thời gian phản hồi như thế nào. Với bản chất của các mạng, bạn sẽ luôn có các giá trị ngoại lệ, vì vậy việc đặt mục tiêu cho một phân vị nhất định của các phản hồi được giám sát có thể hữu ích. Mục tiêu cũng nên bao gồm số lượng kết nối/người dùng đồng thời mà bạn sẽ mong đợi phần mềm của mình xử lý. Vì vậy, bạn có thể nói, "Chúng tôi mong đợi trang web có thời gian phản hồi ở phân vị thứ 90 là 2 giây khi xử lý 200 kết nối đồng thời mỗi giây."
+*   **Tính sẵn có (Availability)**
+    Bạn có thể mong đợi một dịch vụ bị ngừng hoạt động không? Đây có được coi là một dịch vụ 24/7 không? Một số người thích xem xét các khoảng thời gian ngừng hoạt động có thể chấp nhận được khi đo lường tính sẵn có, nhưng điều này hữu ích như thế nào đối với một người đang gọi dịch vụ của bạn? Tôi nên có thể dựa vào việc dịch vụ của bạn phản hồi hoặc không. Việc đo lường các khoảng thời gian ngừng hoạt động thực sự hữu ích hơn từ góc độ báo cáo lịch sử.
+*   **Độ bền của dữ liệu (Durability of data)**
+    Bao nhiêu mất mát dữ liệu là chấp nhận được? Dữ liệu nên được giữ trong bao lâu? Điều này rất có khả năng sẽ thay đổi theo từng trường hợp cụ thể. Ví dụ, bạn có thể chọn giữ nhật ký phiên người dùng trong một năm hoặc ít hơn để tiết kiệm không gian, nhưng các bản ghi giao dịch tài chính của bạn có thể cần được giữ trong nhiều năm.
+
+Một khi bạn đã có những yêu cầu này, bạn sẽ muốn có một cách để đo lường chúng một cách có hệ thống một cách liên tục. Bạn có thể quyết định sử dụng các bài kiểm thử hiệu suất, chẳng hạn, để đảm bảo hệ thống của bạn đáp ứng các mục tiêu hiệu suất chấp nhận được, nhưng bạn sẽ muốn đảm bảo rằng bạn đang giám sát các chỉ số này trong sản xuất!
+
+#### **Giảm cấp Chức năng (Degrading Functionality)**
+
+Một phần thiết yếu của việc xây dựng một hệ thống có khả năng phục hồi, đặc biệt là khi chức năng của bạn được trải rộng trên một số microservice khác nhau có thể hoạt động hoặc không, là khả năng **giảm cấp chức năng** một cách an toàn. Hãy tưởng tượng một trang web tiêu chuẩn trên trang thương mại điện tử của chúng ta. Để kéo các phần khác nhau của trang web đó lại với nhau, chúng ta có thể cần nhiều microservice tham gia. Một microservice có thể hiển thị các chi tiết về album đang được rao bán. Một microservice khác có thể hiển thị giá và mức tồn kho. Và chúng ta có lẽ sẽ hiển thị cả nội dung giỏ hàng nữa, có thể là một microservice khác. Bây giờ nếu một trong những dịch vụ đó bị lỗi, và điều đó dẫn đến toàn bộ trang web không khả dụng, thì chúng ta có thể cho rằng đã tạo ra một hệ thống kém bền vững hơn một hệ thống chỉ yêu cầu một dịch vụ khả dụng.
+
+Điều chúng ta cần làm là hiểu tác động của mỗi sự cố, và tìm ra cách giảm cấp chức năng một cách đúng đắn. Nếu dịch vụ giỏ hàng không khả dụng, chúng ta có lẽ đang gặp rắc rối lớn, nhưng chúng ta vẫn có thể hiển thị trang web với danh sách. Có lẽ chúng ta chỉ cần ẩn giỏ hàng hoặc thay thế nó bằng một biểu tượng có nội dung "Sẽ sớm trở lại!"
+
+Với một ứng dụng `monolithic` duy nhất, chúng ta không có nhiều quyết định để đưa ra. Sức khỏe hệ thống là nhị phân. Nhưng với một kiến trúc microservice, chúng ta cần xem xét một tình huống tinh tế hơn nhiều. Việc làm đúng trong bất kỳ tình huống nào thường không phải là một quyết định kỹ thuật. Chúng ta có thể biết những gì có thể về mặt kỹ thuật khi giỏ hàng bị lỗi, nhưng trừ khi chúng ta hiểu bối cảnh kinh doanh, chúng ta sẽ không hiểu hành động nào chúng ta nên thực hiện. Ví dụ, có lẽ chúng ta đóng toàn bộ trang web, vẫn cho phép mọi người duyệt danh mục các mặt hàng, hoặc thay thế phần giao diện người dùng chứa điều khiển giỏ hàng bằng một số điện thoại để đặt hàng. Nhưng đối với mọi giao diện hướng tới khách hàng sử dụng nhiều microservice, hoặc mọi microservice phụ thuộc vào nhiều cộng tác viên hạ nguồn, bạn cần phải tự hỏi, "Điều gì sẽ xảy ra nếu cái này bị lỗi?" và biết phải làm gì.
+
+Bằng cách suy nghĩ về tính critique của mỗi khả năng của chúng ta về các yêu cầu chức năng chéo của chúng ta, chúng ta sẽ ở một vị trí tốt hơn nhiều để biết chúng ta có thể làm gì. Bây giờ hãy xem xét một số điều chúng ta có thể làm từ quan điểm kỹ thuật để đảm bảo rằng khi thất bại xảy ra, chúng ta có thể xử lý nó một cách duyên dáng.
+
+*(Phần tiếp theo sẽ đi sâu vào "Architectural Safety Measures" như Timeouts, Circuit Breakers và Bulkheads.)*
+
+Chắc chắn rồi! Chúng ta sẽ tiếp tục với phần "Architectural Safety Measures", nơi chúng ta sẽ tìm hiểu về các mẫu hình cụ thể để xây dựng khả năng phục hồi trong hệ thống microservice.
+
+---
+
+#### **Các Biện pháp An toàn Kiến trúc (Architectural Safety Measures)**
+
+Có một vài mẫu hình, mà tôi gọi chung là **các biện pháp an toàn kiến trúc (architectural safety measures)**, mà chúng ta có thể sử dụng để đảm bảo rằng nếu có sự cố xảy ra, nó không gây ra các hiệu ứng gợn sóng khó chịu. Đây là những điểm mà bạn cần phải hiểu và nên xem xét mạnh mẽ việc tiêu chuẩn hóa trong hệ thống của mình để đảm bảo rằng một công dân tồi không làm sụp đổ cả thế giới xung quanh bạn. Trong giây lát, chúng ta sẽ xem xét một vài biện pháp an toàn quan trọng mà bạn nên xem xét, nhưng trước khi làm điều đó, tôi muốn chia sẻ một câu chuyện ngắn để phác thảo loại sự cố có thể xảy ra.
+
+Tôi từng là trưởng nhóm kỹ thuật trong một dự án nơi chúng tôi đang xây dựng một trang web rao vặt trực tuyến. Bản thân trang web xử lý khối lượng khá cao, và tạo ra một khoản thu nhập tốt cho doanh nghiệp. Ứng dụng cốt lõi của chúng tôi tự xử lý một số việc hiển thị quảng cáo rao vặt, và cũng ủy quyền các cuộc gọi đến các dịch vụ khác cung cấp các loại sản phẩm khác nhau, như được hiển thị trong Hình 11-1. Đây thực sự là một ví dụ về một **ứng dụng bóp nghẹt (strangler application)**, nơi một hệ thống mới chặn các cuộc gọi đến các ứng dụng kế thừa và dần dần thay thế chúng hoàn toàn. Là một phần của dự án này, chúng tôi đang trong quá trình loại bỏ các ứng dụng cũ hơn. Chúng tôi vừa mới chuyển qua sản phẩm có khối lượng cao nhất và mang lại doanh thu lớn nhất, nhưng phần lớn các quảng cáo còn lại vẫn được phục vụ bởi một số ứng dụng cũ hơn. Về cả số lượng tìm kiếm và số tiền kiếm được từ các ứng dụng này, có một cái đuôi rất dài.
+
+![alt text](<images/Screenshot from 2025-09-29 13-22-26.png>)
+
+**Hình 11-1.** *Một trang web rao vặt đang bóp nghẹt các ứng dụng kế thừa cũ hơn*
+
+Hệ thống của chúng tôi đã hoạt động được một thời gian và đang hoạt động rất tốt, xử lý một tải không hề nhỏ. Vào thời điểm đó, chúng tôi phải xử lý khoảng 6.000–7.000 yêu cầu mỗi giây vào giờ cao điểm, và mặc dù phần lớn trong số đó được lưu vào bộ nhớ đệm rất nhiều bởi các `proxy` ngược nằm trước các máy chủ ứng dụng của chúng tôi, các tìm kiếm cho sản phẩm (khía cạnh quan trọng nhất của trang web) hầu hết không được lưu vào bộ nhớ đệm và yêu cầu một chuyến đi khứ hồi đầy đủ đến máy chủ.
+
+Một buổi sáng, ngay trước khi chúng tôi đạt đến đỉnh điểm giờ ăn trưa hàng ngày, hệ thống bắt đầu hoạt động chậm, sau đó dần dần bắt đầu thất bại. Chúng tôi có một mức độ giám sát nào đó trên ứng dụng cốt lõi mới của mình, đủ để cho chúng tôi biết rằng mỗi nút ứng dụng của chúng tôi đang đạt đến mức tăng đột biến CPU 100%, cao hơn nhiều so với các mức bình thường ngay cả vào giờ cao điểm. Trong một khoảng thời gian ngắn, toàn bộ trang web đã ngừng hoạt động.
+
+Chúng tôi đã cố gắng truy tìm thủ phạm và đưa trang web hoạt động trở lại. Hóa ra một trong những hệ thống quảng cáo hạ nguồn, một trong những hệ thống cũ nhất và ít được bảo trì tích cực nhất, đã bắt đầu phản hồi rất chậm. **Phản hồi rất chậm** là một trong những chế độ lỗi tồi tệ nhất bạn có thể trải nghiệm. Nếu một hệ thống không có ở đó, bạn sẽ phát hiện ra khá nhanh. Khi nó chỉ chậm, bạn cuối cùng phải đợi một lúc trước khi từ bỏ. Nhưng bất kể nguyên nhân của sự cố là gì, chúng tôi đã tạo ra một hệ thống dễ bị **lỗi xếp tầng (cascading failure)**. Một dịch vụ hạ nguồn, mà chúng tôi có ít quyền kiểm soát, đã có thể làm sụp đổ toàn bộ hệ thống của chúng tôi.
+
+Trong khi một đội xem xét các vấn đề với hệ thống hạ nguồn, những người còn lại trong chúng tôi bắt đầu xem xét những gì đã sai trong ứng dụng của mình. Chúng tôi đã tìm thấy một vài vấn đề. Chúng tôi đang sử dụng một `HTTP connection pool` để xử lý các kết nối hạ nguồn của mình. Các luồng trong chính `pool` đã có các thời gian chờ được cấu hình cho việc chúng sẽ đợi bao lâu khi thực hiện cuộc gọi `HTTP` hạ nguồn, điều này là tốt. Vấn đề là các worker đều mất một thời gian dài để hết thời gian chờ do hệ thống hạ nguồn chậm. Trong khi chúng đang chờ đợi, nhiều yêu cầu hơn đã đến `pool` yêu cầu các luồng worker. Khi không có worker nào có sẵn, chính các yêu cầu này đã bị treo. Hóa ra thư viện `connection pool` mà chúng tôi đang sử dụng có một thời gian chờ để chờ các worker, nhưng điều này đã bị **vô hiệu hóa theo mặc định**! Điều này đã dẫn đến một sự tích tụ lớn các luồng bị chặn. Ứng dụng của chúng tôi thường có 40 kết nối đồng thời tại bất kỳ thời điểm nào. Trong vòng năm phút, tình huống này đã khiến chúng tôi đạt đến đỉnh điểm khoảng 800 kết nối, làm sụp đổ hệ thống.
+
+Điều tồi tệ hơn là dịch vụ hạ nguồn mà chúng tôi đang nói chuyện đại diện cho chức năng mà chưa đến 5% cơ sở khách hàng của chúng tôi sử dụng, và tạo ra doanh thu thậm chí còn ít hơn thế. Khi bạn xem xét kỹ hơn, chúng tôi đã phát hiện ra một cách khó khăn rằng các hệ thống chỉ hoạt động chậm khó đối phó hơn nhiều so với các hệ thống chỉ thất bại nhanh chóng. **Trong một hệ thống phân tán, độ trễ sẽ giết chết bạn.**
+
+Ngay cả khi chúng tôi đã đặt thời gian chờ trên `pool` một cách chính xác, chúng tôi cũng đang chia sẻ một `HTTP connection pool` duy nhất cho tất cả các yêu cầu gửi đi. Điều này có nghĩa là một dịch vụ chậm có thể làm cạn kiệt số lượng các worker có sẵn một mình, ngay cả khi mọi thứ khác đều khỏe mạnh. Cuối cùng, rõ ràng là dịch vụ hạ nguồn được đề cập không khỏe mạnh, nhưng chúng tôi vẫn tiếp tục gửi lưu lượng truy cập đến nó. Trong tình huống của chúng tôi, điều này có nghĩa là chúng tôi thực sự đang làm cho một tình huống tồi tệ trở nên tồi tệ hơn, vì dịch vụ hạ nguồn không có cơ hội phục hồi. Cuối cùng, chúng tôi đã triển khai ba bản sửa lỗi để tránh điều này xảy ra lần nữa: **đặt thời gian chờ đúng cách**, triển khai các **vách ngăn (bulkheads)** để tách các `connection pool` khác nhau, và triển khai một **bộ ngắt mạch (circuit breaker)** để tránh gửi các cuộc gọi đến một hệ thống không lành mạnh ngay từ đầu.
+
+##### **Tổ chức Chống mong manh (The Antifragile Organization)**
+
+Trong cuốn sách *Antifragile* (Random House), Nassim Taleb nói về những thứ thực sự được hưởng lợi từ sự thất bại và sự hỗn loạn. Ariel Tseitlin đã sử dụng khái niệm này để đặt ra khái niệm về **tổ chức chống mong manh** liên quan đến cách Netflix hoạt động.
+
+Quy mô mà Netflix hoạt động đã được biết đến rộng rãi, cũng như thực tế là Netflix hoàn toàn dựa trên cơ sở hạ tầng AWS. Hai yếu tố này có nghĩa là nó phải chấp nhận sự thất bại một cách tốt đẹp. Netflix vượt ra ngoài điều đó bằng cách thực sự **kích động sự thất bại** để đảm bảo rằng các hệ thống của nó có khả năng chịu đựng được.
+
+Một số tổ chức sẽ hài lòng với **những ngày diễn tập (game days)**, nơi sự thất bại được mô phỏng bằng cách tắt các hệ thống và để các đội khác nhau phản ứng. Trong thời gian tôi ở Google, đây là một sự kiện khá phổ biến đối với các hệ thống khác nhau, và tôi chắc chắn nghĩ rằng nhiều tổ chức có thể được hưởng lợi từ việc có các loại bài tập này thường xuyên. Google vượt ra ngoài các bài kiểm thử đơn giản để bắt chước lỗi máy chủ, và như một phần của các bài tập **DiRT (Disaster Recovery Test)** hàng năm của mình, họ đã mô phỏng các thảm họa quy mô lớn như động đất. Netflix cũng có một cách tiếp cận tích cực hơn, bằng cách viết các chương trình gây ra lỗi và chạy chúng trong sản xuất hàng ngày.
+
+Nổi tiếng nhất trong số các chương trình này là **Chaos Monkey**, trong một số giờ nhất định trong ngày sẽ tắt các máy ngẫu nhiên. Việc biết rằng điều này có thể và sẽ xảy ra trong sản xuất có nghĩa là các nhà phát triển tạo ra các hệ thống thực sự phải chuẩn bị cho nó. Chaos Monkey chỉ là một phần của **Đội quân Khỉ (Simian Army)** gồm các bot gây lỗi của Netflix. **Chaos Gorilla** được sử dụng để hạ gục toàn bộ một trung tâm sẵn có (tương đương của AWS với một trung tâm dữ liệu), trong khi **Latency Monkey** mô phỏng kết nối mạng chậm giữa các máy. Netflix đã cung cấp các công cụ này dưới một giấy phép mã nguồn mở. Đối với nhiều người, bài kiểm tra cuối cùng về việc liệu hệ thống của bạn có thực sự mạnh mẽ hay không có thể là giải phóng Đội quân Khỉ của riêng bạn trên cơ sở hạ tầng sản xuất của bạn.
+
+Việc chấp nhận và kích động sự thất bại thông qua phần mềm, và xây dựng các hệ thống có thể xử lý nó, chỉ là một phần của những gì Netflix làm. Họ cũng hiểu tầm quan trọng của việc học hỏi từ sự thất bại khi nó xảy ra, và áp dụng một văn hóa không đổ lỗi khi sai lầm xảy ra. Các nhà phát triển được trao quyền nhiều hơn để trở thành một phần của quá trình học hỏi và phát triển này, vì mỗi nhà phát triển cũng chịu trách nhiệm quản lý các dịch vụ sản xuất của mình.
+
+Bằng cách gây ra sự thất bại, và xây dựng cho nó, Netflix đã đảm bảo rằng các hệ thống của họ có quy mô tốt hơn, và hỗ trợ tốt hơn nhu cầu của khách hàng của họ.
+
+Không phải ai cũng cần phải đi đến những thái cực như Google hay Netflix, nhưng điều quan trọng là phải hiểu sự thay đổi tư duy cần thiết với các hệ thống phân tán. Mọi thứ sẽ thất bại. Thực tế là hệ thống của bạn bây giờ được trải rộng trên nhiều máy (sẽ thất bại) trên một mạng (sẽ không đáng tin cậy) thực sự có thể làm cho hệ thống của bạn dễ bị tổn thương hơn, không phải ít hơn. Vì vậy, bất kể bạn đang cố gắng cung cấp một dịch vụ ở quy mô của Google hay Netflix, việc chuẩn bị cho các loại thất bại xảy ra với các kiến trúc phân tán hơn là khá quan trọng. Vậy chúng ta cần làm gì để xử lý sự cố trong các hệ thống của mình?
+
+##### **Thời gian chờ (Timeouts)**
+
+Thời gian chờ là một cái gì đó dễ bị bỏ qua, nhưng trong một hệ thống hạ nguồn, chúng rất quan trọng để làm đúng. Tôi có thể đợi bao lâu trước khi tôi có thể coi một hệ thống hạ nguồn thực sự đã bị lỗi?
+
+*   **Đợi quá lâu** để quyết định rằng một cuộc gọi đã thất bại, và bạn có thể làm chậm toàn bộ hệ thống.
+*   **Hết thời gian chờ quá nhanh**, và bạn sẽ coi một cuộc gọi có thể đã hoạt động là đã thất bại.
+*   **Không có thời gian chờ nào cả**, và một hệ thống hạ nguồn bị lỗi có thể treo toàn bộ hệ thống của bạn.
+
+Hãy đặt thời gian chờ trên tất cả các cuộc gọi ra ngoài tiến trình, và chọn một thời gian chờ mặc định cho mọi thứ. Ghi nhật ký khi thời gian chờ xảy ra, xem điều gì sẽ xảy ra, và thay đổi chúng một cách tương ứng.
+
+*(Phần tiếp theo sẽ đi sâu vào "Circuit Breakers" và "Bulkheads".)*
+
+Tuyệt vời! Chúng ta sẽ tiếp tục khám phá các biện pháp an toàn kiến trúc cốt lõi: "Circuit Breakers", "Bulkheads", và "Isolation".
+
+---
+
+##### **Bộ ngắt mạch (Circuit Breakers)**
+
+Trong nhà của bạn, các bộ ngắt mạch tồn tại để bảo vệ các thiết bị điện của bạn khỏi các đợt tăng điện áp. Nếu một đợt tăng điện áp xảy ra, bộ ngắt mạch sẽ bị ngắt, bảo vệ các thiết bị gia dụng đắt tiền của bạn. Bạn cũng có thể tự mình tắt một bộ ngắt mạch để cắt điện cho một phần của ngôi nhà, cho phép bạn làm việc an toàn trên hệ thống điện. Cuốn sách *Release It!* của Michael Nygard (Pragmatic Programmers) cho thấy ý tưởng tương tự có thể hoạt động kỳ diệu như một cơ chế bảo vệ cho phần mềm của chúng ta.
+
+Hãy xem xét câu chuyện tôi đã chia sẻ cách đây ít phút. Ứng dụng quảng cáo kế thừa ở hạ nguồn đang phản hồi rất chậm, trước khi cuối cùng trả về một lỗi. Ngay cả khi chúng ta đã đặt thời gian chờ đúng cách, chúng ta vẫn phải đợi một thời gian dài trước khi nhận được lỗi. Và sau đó chúng ta sẽ thử lại lần nữa khi có yêu cầu tiếp theo, và lại chờ đợi. Việc dịch vụ hạ nguồn hoạt động sai đã đủ tệ, nhưng nó còn làm chúng ta đi chậm nữa.
+
+Với một **bộ ngắt mạch (circuit breaker)**, sau một số lượng yêu cầu nhất định đến tài nguyên hạ nguồn đã thất bại, bộ ngắt mạch sẽ bị **ngắt (blown)**. Tất cả các yêu cầu tiếp theo sẽ **thất bại nhanh chóng (fail fast)** trong khi bộ ngắt mạch ở trạng thái ngắt. Sau một khoảng thời gian nhất định, máy khách sẽ gửi một vài yêu cầu qua để xem liệu dịch vụ hạ nguồn đã phục hồi hay chưa, và nếu nó nhận được đủ các phản hồi lành mạnh, nó sẽ **đặt lại (resets)** bộ ngắt mạch. Bạn có thể xem tổng quan về quy trình này trong Hình 11-2.
+
+![alt text](<images/Screenshot from 2025-09-29 13-22-35.png>)
+
+**Hình 11-2.** *Tổng quan về các bộ ngắt mạch*
+
+Cách bạn triển khai một bộ ngắt mạch phụ thuộc vào ý nghĩa của một yêu cầu thất bại, nhưng khi tôi đã triển khai chúng cho các kết nối `HTTP`, tôi đã coi thất bại có nghĩa là hoặc là một **thời gian chờ** hoặc một mã trả về `HTTP 5XX`. Bằng cách này, khi một tài nguyên hạ nguồn bị lỗi, hoặc hết thời gian chờ, hoặc trả về lỗi, sau khi đạt đến một ngưỡng nhất định, chúng ta sẽ tự động ngừng gửi lưu lượng truy cập và bắt đầu thất bại nhanh chóng. Và chúng ta có thể tự động bắt đầu lại khi mọi thứ đã khỏe mạnh.
+
+Việc thiết lập các cài đặt đúng cách có thể hơi phức tạp. Bạn không muốn ngắt bộ ngắt mạch quá dễ dàng, cũng như không muốn mất quá nhiều thời gian để ngắt nó. Tương tự như vậy, bạn thực sự muốn đảm bảo rằng dịch vụ hạ nguồn đã khỏe mạnh trở lại trước khi gửi lưu lượng truy cập. Như với thời gian chờ, tôi sẽ chọn một số giá trị mặc định hợp lý và tuân thủ chúng ở mọi nơi, sau đó thay đổi chúng cho các trường hợp cụ thể.
+
+Trong khi bộ ngắt mạch bị ngắt, bạn có một số tùy chọn. Một là xếp hàng các yêu cầu và thử lại chúng sau. Đối với một số trường hợp sử dụng, điều này có thể phù hợp, đặc biệt nếu bạn đang thực hiện một số công việc như một phần của một công việc bất đồng bộ. Tuy nhiên, nếu cuộc gọi này được thực hiện như một phần của một chuỗi cuộc gọi đồng bộ, có lẽ tốt hơn là nên thất bại nhanh chóng. Điều này có thể có nghĩa là lan truyền một lỗi lên chuỗi cuộc gọi, hoặc một sự giảm cấp chức năng tinh tế hơn.
+
+Nếu chúng ta có cơ chế này tại chỗ (như với các bộ ngắt mạch trong nhà của chúng ta), chúng ta có thể sử dụng chúng một cách thủ công để làm cho công việc của chúng ta an toàn hơn. Ví dụ, nếu chúng ta muốn gỡ bỏ một microservice như một phần của việc bảo trì định kỳ, chúng ta có thể tự mình ngắt tất cả các bộ ngắt mạch của các hệ thống phụ thuộc để chúng thất bại nhanh chóng trong khi microservice ngoại tuyến. Một khi nó trở lại, chúng ta có thể đặt lại các bộ ngắt mạch và mọi thứ sẽ trở lại bình thường.
+
+##### **Vách ngăn (Bulkheads)**
+
+Trong một mẫu hình khác từ *Release It!*, Nygard giới thiệu khái niệm về một **vách ngăn (bulkhead)** như một cách để tự cô lập mình khỏi thất bại. Trong ngành vận tải biển, một vách ngăn là một phần của con tàu có thể được niêm phong để bảo vệ phần còn lại của con tàu. Vì vậy, nếu con tàu bị rò rỉ, bạn có thể đóng các cửa vách ngăn. Bạn mất một phần của con tàu, nhưng phần còn lại của nó vẫn còn nguyên vẹn.
+
+Trong thuật ngữ kiến trúc phần mềm, có rất nhiều các vách ngăn khác nhau chúng ta có thể xem xét. Quay trở lại kinh nghiệm của riêng tôi, chúng tôi thực sự đã bỏ lỡ cơ hội để triển khai một vách ngăn. Chúng ta nên đã sử dụng các `connection pool` khác nhau cho mỗi kết nối hạ nguồn. Bằng cách đó, nếu một `connection pool` bị cạn kiệt, các kết nối khác không bị ảnh hưởng, như chúng ta thấy trong Hình 11-3. Điều này sẽ đảm bảo rằng nếu một dịch vụ hạ nguồn bắt đầu hoạt động chậm trong tương lai, chỉ có `connection pool` đó sẽ bị ảnh hưởng, cho phép các cuộc gọi khác tiếp tục như bình thường.
+
+![alt text](<images/Screenshot from 2025-09-29 13-22-41.png>)
+
+**Hình 11-3.** *Sử dụng một connection pool cho mỗi dịch vụ hạ nguồn để cung cấp các vách ngăn*
+
+Việc tách biệt các mối quan tâm cũng có thể là một cách để triển khai các vách ngăn. Bằng cách chia nhỏ chức năng thành các microservice riêng biệt, chúng ta giảm khả năng một sự cố trong một lĩnh vực ảnh hưởng đến một lĩnh vực khác.
+
+Hãy xem xét tất cả các khía cạnh của hệ thống của bạn có thể gặp sự cố, cả bên trong các microservice của bạn và giữa chúng. Bạn có các vách ngăn tại chỗ không? Tôi sẽ đề nghị bắt đầu với các `connection pool` riêng biệt cho mỗi kết nối hạ nguồn ở mức tối thiểu. Tuy nhiên, bạn có thể muốn đi xa hơn, và xem xét việc sử dụng cả các bộ ngắt mạch nữa.
+
+Chúng ta có thể nghĩ về các bộ ngắt mạch của mình như một cơ chế tự động để niêm phong một vách ngăn, không chỉ để bảo vệ người tiêu dùng khỏi vấn đề hạ nguồn, mà còn có khả năng bảo vệ dịch vụ hạ nguồn khỏi nhiều cuộc gọi hơn có thể có tác động bất lợi. Với những nguy cơ của lỗi xếp tầng, tôi sẽ khuyến nghị bắt buộc các bộ ngắt mạch cho tất cả các cuộc gọi hạ nguồn đồng bộ của bạn. Bạn cũng không cần phải tự viết,. Thư viện **Hystrix** của Netflix là một trừu tượng bộ ngắt mạch JVM đi kèm với một số giám sát mạnh mẽ, nhưng các triển khai khác tồn tại cho các `technology stack` khác nhau, chẳng hạn như **Polly** cho .NET, hoặc `mixin circuit_breaker` cho Ruby.
+
+Theo nhiều cách, các vách ngăn là quan trọng nhất trong ba mẫu hình này. Thời gian chờ và các bộ ngắt mạch giúp bạn giải phóng tài nguyên khi chúng đang trở nên bị hạn chế, nhưng các vách ngăn có thể đảm bảo rằng chúng không bị hạn chế ngay từ đầu. Ví dụ, Hystrix cho phép bạn triển khai các vách ngăn thực sự từ chối các yêu cầu trong một số điều kiện nhất định để đảm bảo rằng các tài nguyên không trở nên bão hòa hơn nữa; điều này được gọi là **giảm tải (load shedding)**. Đôi khi từ chối một yêu cầu là cách tốt nhất để ngăn một hệ thống quan trọng trở nên quá tải và trở thành một nút thắt cổ chai cho nhiều dịch vụ thượng nguồn.
+
+##### **Sự cô lập (Isolation)**
+
+Một dịch vụ càng phụ thuộc vào một dịch vụ khác đang hoạt động, sức khỏe của dịch vụ này càng ảnh hưởng đến khả năng của dịch vụ kia trong việc thực hiện công việc của mình. Nếu chúng ta có thể sử dụng các kỹ thuật tích hợp cho phép một máy chủ hạ nguồn ngoại tuyến, các dịch vụ thượng nguồn ít có khả năng bị ảnh hưởng bởi các sự cố, dù là có kế hoạch hay không có kế hoạch.
+
+Có một lợi ích khác của việc tăng sự cô lập giữa các dịch vụ. Khi các dịch vụ được cô lập khỏi nhau, cần ít sự phối hợp hơn giữa các chủ sở hữu dịch vụ. Càng ít sự phối hợp cần thiết giữa các đội, các đội đó càng có nhiều quyền tự chủ hơn, vì chúng có thể hoạt động và phát triển các dịch vụ của mình một cách tự do hơn.
+
+##### **Tính Bất biến (Idempotency)**
+
+Trong các hoạt động **bất biến (idempotent)**, kết quả không thay đổi sau lần áp dụng đầu tiên, ngay cả khi hoạt động sau đó được áp dụng nhiều lần. Nếu các hoạt động là bất biến, chúng ta có thể lặp lại cuộc gọi nhiều lần mà không có tác động bất lợi. Điều này rất hữu ích khi chúng ta muốn phát lại các thông điệp mà chúng ta không chắc đã được xử lý hay chưa, một cách phổ biến để phục hồi sau lỗi.
+
+Hãy xem xét một cuộc gọi đơn giản để thêm một số điểm như là kết quả của việc một trong những khách hàng của chúng ta đặt hàng. Chúng ta có thể thực hiện một cuộc gọi với loại `payload` được hiển thị trong Ví dụ 11-1.
+
+**Ví dụ 11-1.** *Ghi có điểm vào một tài khoản*
+```xml
+<credit>
+    <amount>100</amount>
+    <forAccount>1234</forAccount>
+</credit>
+```
+Nếu cuộc gọi này được nhận nhiều lần, chúng ta sẽ cộng 100 điểm nhiều lần. Do đó, cuộc gọi này không phải là bất biến. Tuy nhiên, với một chút thông tin thêm, chúng ta cho phép ngân hàng điểm làm cho cuộc gọi này trở nên bất biến, như được hiển thị trong Ví dụ 11-2.
+
+**Ví dụ 11-2.** *Thêm thông tin bổ sung vào việc ghi có điểm để làm cho nó trở nên bất biến*
+
+```xml
+<credit>
+    <amount>100</amount>
+    <forAccount>1234</forAccount>
+    <reason>
+        <forPurchase>4567</forPurchase>
+    </reason>
+</credit>
+```
+
+Bây giờ chúng ta biết rằng khoản tín dụng này liên quan đến một đơn đặt hàng cụ thể, 4567. Giả sử rằng chúng ta chỉ có thể nhận được một khoản tín dụng cho một đơn đặt hàng nhất định, chúng ta có thể áp dụng lại khoản tín dụng này mà không làm tăng tổng số điểm.
+
+Cơ chế này hoạt động tốt như nhau với sự hợp tác dựa trên sự kiện, và có thể đặc biệt hữu ích nếu bạn có nhiều phiên bản của cùng một loại dịch vụ đăng ký các sự kiện. Ngay cả khi chúng ta lưu trữ những sự kiện nào đã được xử lý, với một số hình thức gửi thông điệp bất đồng bộ có thể có những cửa sổ nhỏ nơi hai worker có thể thấy cùng một thông điệp. Bằng cách xử lý các sự kiện một cách bất biến, chúng ta đảm bảo điều này sẽ không gây ra bất kỳ vấn đề nào cho chúng ta.
+
+Một số người khá bị cuốn vào khái niệm này, và cho rằng các cuộc gọi tiếp theo với các tham số giống nhau không thể có *bất kỳ* tác động nào, điều này sau đó để lại chúng ta ở một vị trí thú vị. Chúng ta thực sự vẫn muốn ghi lại thực tế là một cuộc gọi đã được nhận trong nhật ký của mình, chẳng hạn. Chúng ta muốn ghi lại thời gian phản hồi của cuộc gọi và thu thập dữ liệu này để giám sát. Điểm mấu chốt ở đây là chính **hoạt động nghiệp vụ cơ bản** mà chúng ta đang xem xét là bất biến, không phải toàn bộ trạng thái của hệ thống.
+
+Một số động từ `HTTP`, chẳng hạn như `GET` và `PUT`, được định nghĩa trong đặc tả `HTTP` là bất biến, nhưng để điều đó xảy ra, chúng dựa vào việc dịch vụ của bạn xử lý các cuộc gọi này một cách bất biến. Nếu bạn bắt đầu làm cho các động từ này không bất biến, nhưng người gọi nghĩ rằng họ có thể thực thi chúng một cách an toàn nhiều lần, bạn có thể tự mình rơi vào một mớ hỗn độn. Hãy nhớ rằng, chỉ vì bạn đang sử dụng `HTTP` làm giao thức cơ bản không có nghĩa là bạn nhận được mọi thứ miễn phí!
+
+*(Phần tiếp theo sẽ thảo luận về "Scaling".)*
+
+Chắc chắn rồi! Chúng ta sẽ đi tiếp với phần "Scaling", khám phá các kỹ thuật khác nhau để mở rộng quy mô hệ thống microservice của bạn.
+
+---
+
+#### **Mở rộng quy mô (Scaling)**
+
+Chúng ta mở rộng quy mô hệ thống của mình nói chung vì một trong hai lý do.
+*   **Thứ nhất**, để giúp đối phó với thất bại: nếu chúng ta lo lắng rằng một cái gì đó sẽ thất bại, thì việc có nhiều hơn sẽ giúp ích, phải không?
+*   **Thứ hai**, chúng ta mở rộng quy mô vì hiệu suất, hoặc là về việc xử lý nhiều tải hơn, giảm độ trễ, hoặc cả hai.
+
+Hãy xem xét một số kỹ thuật mở rộng quy mô phổ biến mà chúng ta có thể sử dụng và suy nghĩ về cách chúng áp dụng cho các kiến trúc microservice.
+
+##### **Làm cho nó Lớn hơn (Go Bigger)**
+
+Một số hoạt động có thể chỉ được hưởng lợi từ việc có nhiều sức mạnh hơn. Việc có một chiếc máy lớn hơn với CPU nhanh hơn và I/O tốt hơn thường có thể cải thiện độ trễ và thông lượng, cho phép bạn xử lý nhiều công việc hơn trong thời gian ngắn hơn. Tuy nhiên, hình thức mở rộng quy mô này, thường được gọi là **mở rộng quy mô theo chiều dọc (vertical scaling)**, có thể tốn kém—đôi khi một máy chủ lớn có thể tốn kém hơn hai máy chủ nhỏ hơn có cùng tổng công suất thô, đặc biệt là khi bạn bắt đầu tiếp cận những chiếc máy thực sự lớn. Đôi khi chính phần mềm của chúng ta không thể làm được gì nhiều với các tài nguyên bổ sung có sẵn. Các máy lớn hơn thường chỉ cung cấp cho chúng ta nhiều lõi CPU hơn, nhưng không đủ phần mềm của chúng ta được viết để tận dụng chúng. Vấn đề khác là hình thức mở rộng quy mô này có thể không cải thiện nhiều khả năng phục hồi của máy chủ của chúng ta nếu chúng ta chỉ có một máy chủ! Tuy nhiên, đây có thể là một chiến thắng nhanh chóng, đặc biệt nếu bạn đang sử dụng một nhà cung cấp ảo hóa cho phép bạn thay đổi kích thước máy móc một cách dễ dàng.
+
+##### **Phân chia Khối lượng công việc (Splitting Workloads)**
+
+Như đã nêu trong **Chương 6**, việc có một microservice duy nhất trên mỗi máy chủ chắc chắn thích hợp hơn mô hình nhiều dịch vụ trên mỗi máy chủ. Tuy nhiên, ban đầu, nhiều người quyết định cho cùng tồn tại nhiều microservice trên một hộp để giảm chi phí hoặc để đơn giản hóa việc quản lý máy chủ (mặc dù đó là một lý do có thể tranh cãi). Vì các microservice là các tiến trình độc lập giao tiếp qua mạng, việc sau đó di chuyển chúng lên các máy chủ riêng của chúng để cải thiện thông lượng và khả năng mở rộng sẽ là một nhiệm vụ dễ dàng. Điều này cũng có thể tăng khả năng phục hồi của hệ thống, vì một sự cố máy chủ duy nhất sẽ ảnh hưởng đến một số lượng microservice giảm đi.
+
+Tất nhiên, chúng ta cũng có thể sử dụng nhu cầu về quy mô tăng lên để chia nhỏ một microservice hiện có thành các phần để xử lý tải tốt hơn. Ví dụ đơn giản, hãy tưởng tượng rằng dịch vụ tài khoản của chúng ta cung cấp khả năng tạo và quản lý các tài khoản tài chính của khách hàng cá nhân, nhưng cũng phơi bày một API để chạy các truy vấn để tạo báo cáo. Khả năng truy vấn này đặt một tải đáng kể lên hệ thống. Năng lực truy vấn được coi là không quan trọng, vì nó không cần thiết để giữ cho các đơn đặt hàng lưu thông trong ngày. Tuy nhiên, khả năng quản lý các hồ sơ tài chính cho khách hàng của chúng ta là rất quan trọng, và chúng ta không thể để nó bị lỗi. Bằng cách chia nhỏ hai khả năng này thành các dịch vụ riêng biệt, chúng ta giảm tải trên dịch vụ tài khoản quan trọng, và giới thiệu một dịch vụ báo cáo tài khoản mới không chỉ được thiết kế với việc truy vấn (có lẽ sử dụng một số kỹ thuật chúng ta đã phác thảo trong **Chương 4**), mà còn là một hệ thống không quan trọng không cần phải được triển khai một cách bền vững như dịch vụ tài khoản cốt lõi.
+
+##### **Phân tán Rủi ro (Spreading Your Risk)**
+
+Một cách để mở rộng quy mô cho khả năng phục hồi là đảm bảo rằng bạn không đặt tất cả trứng của mình vào một giỏ. Một ví dụ đơn giản của điều này là đảm bảo rằng bạn không có nhiều dịch vụ trên một máy chủ, nơi một sự cố sẽ ảnh hưởng đến nhiều dịch vụ. Nhưng hãy xem xét *máy chủ* có nghĩa là gì. Trong hầu hết các tình huống ngày nay, một máy chủ thực sự là một khái niệm ảo. Vì vậy, điều gì sẽ xảy ra nếu tôi có tất cả các dịch vụ của mình trên các máy chủ khác nhau, nhưng tất cả các máy chủ đó thực sự là các máy chủ ảo, chạy trên cùng một hộp vật lý? Nếu hộp đó bị lỗi, tôi có thể mất nhiều dịch vụ. Một số nền tảng ảo hóa cho phép bạn đảm bảo rằng các máy chủ của bạn được phân phối trên nhiều hộp vật lý khác nhau để giảm cơ hội này.
+
+Đối với các nền tảng ảo hóa nội bộ, một thực hành phổ biến là có phân vùng gốc của máy ảo được ánh xạ đến một **SAN (storage area network)** duy nhất. Nếu SAN đó bị lỗi, nó có thể làm hỏng tất cả các máy ảo được kết nối. SAN rất lớn, đắt tiền, và được thiết kế để không bị lỗi. Điều đó nói rằng, tôi đã có các SAN lớn đắt tiền bị lỗi ít nhất hai lần trong 10 năm qua, và mỗi lần kết quả đều khá nghiêm trọng.
+
+Một hình thức tách biệt phổ biến khác để giảm thiểu lỗi là đảm bảo rằng không phải tất cả các dịch vụ của bạn đều đang chạy trong một giá đỡ duy nhất trong trung tâm dữ liệu, hoặc các dịch vụ của bạn được phân phối trên nhiều hơn một trung tâm dữ liệu. Nếu bạn đang sử dụng một nhà cung cấp dịch vụ cơ bản, điều quan trọng là phải biết liệu một **thỏa thuận cấp độ dịch vụ (service-level agreement - SLA)** có được cung cấp hay không và lên kế hoạch cho phù hợp. Nếu bạn cần đảm bảo các dịch vụ của mình không ngừng hoạt động quá bốn giờ mỗi quý, nhưng nhà cung cấp dịch vụ lưu trữ của bạn chỉ có thể đảm bảo thời gian ngừng hoạt động là tám giờ mỗi quý, bạn phải hoặc thay đổi SLA, hoặc đưa ra một giải pháp thay thế.
+
+Ví dụ, AWS được chia thành các **khu vực (regions)**, bạn có thể coi như các đám mây riêng biệt. Mỗi khu vực lần lượt được chia thành hai hoặc nhiều **vùng sẵn sàng (availability zones - AZs)**. AZ là tương đương của AWS với một trung tâm dữ liệu. Điều cần thiết là phải có các dịch vụ được phân phối trên nhiều vùng sẵn sàng, vì AWS không cung cấp bất kỳ đảm bảo nào về tính sẵn có của một nút duy nhất, hoặc thậm chí là toàn bộ một vùng sẵn sàng. Đối với dịch vụ tính toán của mình, nó chỉ cung cấp thời gian hoạt động 99,95% trong một khoảng thời gian hàng tháng nhất định của toàn bộ khu vực, vì vậy bạn sẽ muốn phân phối khối lượng công việc của mình trên nhiều vùng sẵn sàng bên trong một khu vực duy nhất. Đối với một số người, điều này là không đủ, và thay vào đó họ chạy các dịch vụ của mình trên nhiều khu vực.
+
+Tất nhiên, cần lưu ý rằng vì các nhà cung cấp cung cấp cho bạn một đảm bảo SLA, họ sẽ có xu hướng giới hạn trách nhiệm của mình! Nếu việc họ không đạt được mục tiêu của mình khiến bạn mất khách hàng và một khoản tiền lớn, bạn có thể thấy mình đang tìm kiếm trong các hợp đồng để xem liệu bạn có thể đòi lại được bất cứ điều gì hay không. Do đó, tôi thực sự đề nghị bạn hiểu tác động của việc một nhà cung cấp không thực hiện các nghĩa vụ của mình đối với bạn, và tìm ra liệu bạn có cần có kế hoạch B (hoặc C) trong túi hay không. Hơn một khách hàng tôi đã làm việc cùng đã có một nền tảng lưu trữ khôi phục thảm họa với một nhà cung cấp khác, ví dụ, để đảm bảo họ không quá dễ bị tổn thương trước những sai lầm của một công ty.
+
+##### **Cân bằng Tải (Load Balancing)**
+
+Khi bạn cần dịch vụ của mình có khả năng phục hồi, bạn muốn tránh các điểm lỗi duy nhất. Đối với một microservice điển hình phơi bày một điểm cuối `HTTP` đồng bộ, cách dễ nhất để đạt được điều này là có nhiều máy chủ chạy phiên bản microservice của bạn, ngồi sau một **bộ cân bằng tải (load balancer)**, như được hiển thị trong Hình 11-4. Đối với những người tiêu dùng microservice, bạn không biết liệu bạn đang nói chuyện với một phiên bản microservice hay một trăm.
+
+![alt text](<images/Screenshot from 2025-09-29 13-22-49.png>)
+
+**Hình 11-4.** *Một ví dụ về cách tiếp cận cân bằng tải để mở rộng quy mô số lượng phiên bản dịch vụ khách hàng*
+
+Các bộ cân bằng tải có đủ hình dạng và kích cỡ, từ các thiết bị phần cứng lớn và đắt tiền đến các bộ cân bằng tải dựa trên phần mềm như `mod_proxy`. Tất cả chúng đều có chung một số khả năng chính. Chúng phân phối các cuộc gọi được gửi đến chúng đến một hoặc nhiều phiên bản dựa trên một số thuật toán, loại bỏ các phiên bản khi chúng không còn khỏe mạnh nữa, và hy vọng sẽ thêm chúng trở lại khi chúng khỏe mạnh.
+
+Một số bộ cân bằng tải cung cấp các tính năng hữu ích. Một tính năng phổ biến là **chấm dứt SSL (SSL termination)**, nơi các kết nối `HTTPS` gửi đến bộ cân bằng tải được chuyển đổi thành các kết nối `HTTP` một khi chúng đến chính phiên bản đó. Trong lịch sử, chi phí quản lý `SSL` đủ đáng kể để việc có một bộ cân bằng tải xử lý quy trình này cho bạn là khá hữu ích. Ngày nay, điều này cũng nhiều về việc đơn giản hóa việc thiết lập các máy chủ riêng lẻ đang chạy phiên bản đó. Tuy nhiên, điểm của việc sử dụng `HTTPS` là để đảm bảo rằng các yêu cầu không dễ bị tấn công người đứng giữa, như chúng ta đã thảo luận trong **Chương 9**, vì vậy nếu chúng ta sử dụng chấm dứt `SSL`, chúng ta có khả năng đang tự phơi bày mình phần nào. Một biện pháp giảm thiểu là có tất cả các phiên bản của microservice bên trong một **VLAN** duy nhất, như chúng ta thấy trong Hình 11-5. Một VLAN là một mạng cục bộ ảo, được cô lập theo cách mà các yêu cầu từ bên ngoài nó chỉ có thể đến thông qua một bộ định tuyến, và trong trường hợp này, bộ định tuyến của chúng ta cũng là bộ cân bằng tải chấm dứt `SSL` của chúng ta. Giao tiếp duy nhất đến microservice từ bên ngoài VLAN đến qua `HTTPS`, nhưng bên trong mọi thứ đều là `HTTP`.
+
+![alt text](<images/Screenshot from 2025-09-29 13-22-54.png>)
+
+**Hình 11-5.** *Sử dụng chấm dứt HTTPS tại bộ cân bằng tải với một VLAN để cải thiện bảo mật*
+
+AWS cung cấp các bộ cân bằng tải chấm dứt `HTTPS` dưới dạng các **ELB (elastic load balancers)** và bạn có thể sử dụng các nhóm bảo mật hoặc các đám mây riêng ảo (`VPCs`) của nó để triển khai VLAN. Nếu không, phần mềm như `mod_proxy` có thể đóng một vai trò tương tự như một bộ cân bằng tải phần mềm. Nhiều tổ chức có các bộ cân bằng tải phần cứng, có thể khó tự động hóa. Trong những trường hợp như vậy, tôi đã thấy mình ủng hộ các bộ cân bằng tải phần mềm ngồi sau các bộ cân bằng tải phần cứng để cho phép các đội tự do cấu hình lại những thứ này khi cần thiết. Bạn muốn để mắt đến thực tế là tất cả quá thường xuyên, chính các bộ cân bằng tải phần cứng là những điểm lỗi duy nhất! Bất kể bạn chọn cách tiếp cận nào, khi xem xét cấu hình của một bộ cân bằng tải, hãy coi nó như bạn coi cấu hình của dịch vụ của mình: đảm bảo nó được lưu trữ trong kiểm soát phiên bản và có thể được áp dụng một cách tự động.
+
+Các bộ cân bằng tải cho phép chúng ta thêm nhiều phiên bản hơn của microservice của mình theo một cách minh bạch đối với bất kỳ người tiêu dùng dịch vụ nào. Điều này mang lại cho chúng ta khả năng xử lý tải tăng lên, và cũng làm giảm tác động của một máy chủ duy nhất bị lỗi. Tuy nhiên, nhiều, nếu không muốn nói là hầu hết, các microservice của bạn sẽ có một loại kho dữ liệu bền vững nào đó, có lẽ là một cơ sở dữ liệu nằm trên một máy khác. Nếu chúng ta có nhiều phiên bản microservice trên các máy khác nhau, nhưng chỉ có một máy chủ duy nhất chạy phiên bản cơ sở dữ liệu, cơ sở dữ liệu của chúng ta vẫn là một điểm lỗi duy nhất. Chúng ta sẽ nói về các mẫu để xử lý điều này ngay sau đây.
+
+##### **Các Hệ thống Dựa trên Worker (Worker-Based Systems)**
+
+Cân bằng tải không phải là cách duy nhất để có nhiều phiên bản của dịch vụ của bạn chia sẻ tải và giảm sự mong manh. Tùy thuộc vào bản chất của các hoạt động, một hệ thống dựa trên worker có thể hiệu quả không kém. Ở đây, một tập hợp các phiên bản đều làm việc trên một số công việc tồn đọng được chia sẻ. Đây có thể là một số tiến trình Hadoop, hoặc có lẽ là một số người nghe một hàng đợi công việc được chia sẻ. Các loại hoạt động này rất phù hợp với công việc hàng loạt hoặc các công việc bất đồng bộ. Hãy nghĩ về các tác vụ như xử lý hình thu nhỏ, gửi email, hoặc tạo báo cáo.
+
+Mô hình này cũng hoạt động tốt cho **tải đột biến (peaky load)**, nơi bạn có thể khởi động các phiên bản bổ sung theo yêu cầu để phù hợp với tải đến. Miễn là chính hàng đợi công việc có khả năng phục hồi, mô hình này có thể được sử dụng để mở rộng quy mô cả cho thông lượng công việc được cải thiện, và cả cho khả năng phục hồi được cải thiện—tác động của một worker bị lỗi (hoặc không ở đó) rất dễ đối phó. Công việc sẽ mất nhiều thời gian hơn, nhưng không có gì bị mất.
+
+Tôi đã thấy điều này hoạt động tốt trong các tổ chức có rất nhiều năng lực tính toán không được sử dụng vào một số thời điểm nhất định trong ngày. Ví dụ, qua đêm bạn có thể không cần nhiều máy để chạy hệ thống thương mại điện tử của mình, vì vậy bạn có thể tạm thời sử dụng chúng để chạy các worker cho một công việc báo cáo.
+
+Với các hệ thống dựa trên worker, mặc dù bản thân các worker không cần phải đáng tin cậy như vậy, hệ thống chứa công việc cần làm thì lại cần. Bạn có thể xử lý điều này bằng cách chạy một `message broker` bền vững, chẳng hạn, hoặc có lẽ là một hệ thống như **ZooKeeper**. Lợi ích ở đây là nếu chúng ta sử dụng phần mềm hiện có cho mục đích này, ai đó đã làm phần lớn công việc khó khăn cho chúng ta. Tuy nhiên, chúng ta vẫn cần biết cách thiết lập và duy trì các hệ thống này một cách bền vững.
+
+##### **Bắt đầu Lại (Starting Again)**
+
+Kiến trúc giúp bạn bắt đầu có thể không phải là kiến trúc giúp bạn tiếp tục khi hệ thống của bạn phải xử lý các khối lượng tải rất khác nhau. Như Jeff Dean đã nói trong bài thuyết trình của mình "Challenges in Building Large-Scale Information Retrieval Systems" (hội nghị WSDM 2009), bạn nên "thiết kế cho tăng trưởng ~10 lần, nhưng lên kế hoạch viết lại trước ~100 lần." Tại một số thời điểm nhất định, bạn cần phải làm một cái gì đó khá triệt để để hỗ trợ cấp độ tăng trưởng tiếp theo.
+
+Hãy nhớ lại câu chuyện của Gilt, mà chúng ta đã đề cập trong **Chương 6**. Một ứng dụng Rails `monolithic` đơn giản đã hoạt động tốt cho Gilt trong hai năm. Hoạt động kinh doanh của nó ngày càng thành công, điều này có nghĩa là nhiều khách hàng hơn và nhiều tải hơn. Tại một điểm tới hạn nhất định, công ty đã phải thiết kế lại ứng dụng để xử lý tải mà nó đang thấy.
+
+Một thiết kế lại có thể có nghĩa là chia nhỏ một `monolith` hiện có, như nó đã làm đối với Gilt. Hoặc nó có thể có nghĩa là chọn các kho dữ liệu mới có thể xử lý tải tốt hơn, điều mà chúng ta sẽ xem xét ngay sau đây. Nó cũng có thể có nghĩa là áp dụng các kỹ thuật mới, chẳng hạn như chuyển từ `request/response` đồng bộ sang các hệ thống dựa trên sự kiện, áp dụng các nền tảng triển khai mới, thay đổi toàn bộ `technology stack`, hoặc mọi thứ ở giữa.
+
+Có một nguy cơ là mọi người sẽ thấy nhu cầu tái kiến trúc khi các ngưỡng mở rộng quy mô nhất định được đạt đến như một lý do để xây dựng cho quy mô lớn ngay từ đầu. Điều này có thể là một thảm họa. Khi bắt đầu một dự án mới, chúng ta thường không biết chính xác chúng ta muốn xây dựng cái gì, cũng như không biết liệu nó có thành công hay không. Chúng ta cần có khả năng thử nghiệm nhanh chóng, và hiểu được các khả năng chúng ta cần xây dựng. Nếu chúng ta cố gắng xây dựng cho quy mô lớn ngay từ đầu, chúng ta sẽ kết thúc việc dồn một lượng lớn công việc để chuẩn bị cho tải có thể không bao giờ đến, trong khi chuyển hướng nỗ lực khỏi các hoạt động quan trọng hơn, như hiểu xem liệu có ai sẽ muốn thực sự sử dụng sản phẩm của chúng ta hay không. Eric Ries kể câu chuyện về việc dành sáu tháng để xây dựng một sản phẩm mà không ai từng tải xuống. Ông phản ánh rằng ông có thể đã đặt một liên kết trên một trang web trả về lỗi 404 khi mọi người nhấp vào nó để xem liệu có bất kỳ nhu cầu nào không, dành sáu tháng trên bãi biển thay vào đó, và đã học được nhiều như vậy!
+
+Nhu cầu thay đổi hệ thống của chúng ta để đối phó với quy mô không phải là một dấu hiệu của sự thất bại. Đó là một dấu hiệu của sự thành công.
+
+*(Phần tiếp theo sẽ đi sâu vào "Scaling Databases".)*
+
+Chắc chắn rồi! Chúng ta sẽ đi tiếp với phần cực kỳ quan trọng và phức tạp: "Mở rộng quy mô Cơ sở dữ liệu (Scaling Databases)".
+
+---
+
+#### **Mở rộng quy mô Cơ sở dữ liệu (Scaling Databases)**
+
+Việc mở rộng quy mô các microservice không trạng thái (`stateless`) khá đơn giản. Nhưng điều gì sẽ xảy ra nếu chúng ta đang lưu trữ dữ liệu trong một cơ sở dữ liệu? Chúng ta cũng sẽ cần biết cách mở rộng quy mô đó. Các loại cơ sở dữ liệu khác nhau cung cấp các hình thức mở rộng quy mô khác nhau, và việc hiểu hình thức nào phù hợp nhất với trường hợp sử dụng của bạn sẽ đảm bảo bạn chọn đúng công nghệ cơ sở dữ liệu ngay từ đầu.
+
+##### **Tính sẵn có của Dịch vụ so với Độ bền của Dữ liệu (Availability of Service Versus Durability of Data)**
+
+Ngay từ đầu, điều quan trọng là phải tách biệt khái niệm **tính sẵn có (availability)** của dịch vụ khỏi **độ bền (durability)** của chính dữ liệu đó. Bạn cần hiểu rằng đây là hai thứ khác nhau, và do đó chúng sẽ có các giải pháp khác nhau.
+
+Ví dụ, tôi có thể lưu trữ một bản sao của tất cả dữ liệu được ghi vào cơ sở dữ liệu của mình trong một hệ thống tệp có khả năng phục hồi. Nếu cơ sở dữ liệu bị lỗi, dữ liệu của tôi không bị mất, vì tôi có một bản sao, nhưng bản thân cơ sở dữ liệu không khả dụng, điều này có thể làm cho microservice của tôi cũng không khả dụng. Một mô hình phổ biến hơn sẽ là sử dụng một **bản sao dự phòng (standby replica)**. Tất cả dữ liệu được ghi vào cơ sở dữ liệu chính sẽ được sao chép sang cơ sở dữ liệu bản sao dự phòng. Nếu máy chủ chính bị lỗi, dữ liệu của tôi an toàn, nhưng nếu không có cơ chế để hoặc đưa nó trở lại hoạt động hoặc thăng cấp bản sao lên làm máy chủ chính, chúng ta không có một cơ sở dữ liệu khả dụng, mặc dù dữ liệu của chúng ta an toàn.
+
+##### **Mở rộng quy mô cho Lượt đọc (Scaling for Reads)**
+
+Nhiều dịch vụ chủ yếu là đọc (`read-mostly`). Hãy nghĩ về một dịch vụ danh mục lưu trữ thông tin cho các mặt hàng chúng ta có để bán. Chúng ta thêm các bản ghi cho các mặt hàng mới một cách khá bất thường, và sẽ không có gì đáng ngạc nhiên nếu chúng ta có hơn 100 lượt đọc dữ liệu danh mục của mình cho mỗi lượt ghi. Rất may, việc mở rộng quy mô cho các lượt đọc dễ dàng hơn nhiều so với việc mở rộng quy mô cho các lượt ghi. Việc **lưu vào bộ nhớ đệm (caching)** dữ liệu có thể đóng một vai trò lớn ở đây, và chúng ta sẽ thảo luận sâu hơn về điều đó ngay sau đây.
+
+Một mô hình khác là sử dụng các **bản sao chỉ đọc (read replicas)**.
+
+Trong một hệ thống quản lý cơ sở dữ liệu quan hệ (`RDBMS`) như MySQL hoặc Postgres, dữ liệu có thể được sao chép từ một nút chính đến một hoặc nhiều bản sao. Điều này thường được thực hiện để đảm bảo rằng một bản sao dữ liệu của chúng ta được giữ an toàn, nhưng chúng ta cũng có thể sử dụng nó để phân phối các lượt đọc của mình. Một dịch vụ có thể hướng tất cả các lượt ghi đến nút chính duy nhất, nhưng phân phối các lượt đọc đến một hoặc nhiều bản sao chỉ đọc, như chúng ta thấy trong Hình 11-6. Việc sao chép từ cơ sở dữ liệu chính đến các bản sao xảy ra vào một thời điểm nào đó sau khi ghi. Điều này có nghĩa là với kỹ thuật này, các lượt đọc đôi khi có thể thấy **dữ liệu cũ (stale data)** cho đến khi việc sao chép hoàn tất. Cuối cùng, các lượt đọc sẽ thấy dữ liệu nhất quán. Một thiết lập như vậy được gọi là **nhất quán cuối cùng (eventually consistent)**, và nếu bạn có thể xử lý sự không nhất quán tạm thời, đó là một cách khá dễ dàng và phổ biến để giúp mở rộng quy mô hệ thống. Chúng ta sẽ xem xét sâu hơn về điều này ngay sau đây khi chúng ta xem xét định lý CAP.
+
+![alt text](<images/Screenshot from 2025-09-29 13-23-01.png>)
+
+**Hình 11-6.** *Sử dụng các bản sao chỉ đọc để mở rộng quy mô lượt đọc*
+
+Nhiều năm trước, việc sử dụng các bản sao chỉ đọc để mở rộng quy mô là mốt, mặc dù ngày nay tôi sẽ đề nghị bạn xem xét việc lưu vào bộ nhớ đệm trước, vì nó có thể mang lại những cải tiến đáng kể hơn nhiều về hiệu suất, thường với ít công việc hơn.
+
+##### **Mở rộng quy mô cho Lượt ghi (Scaling for Writes)**
+
+Các lượt đọc tương đối dễ mở rộng quy mô. Còn các lượt ghi thì sao? Một cách tiếp cận là sử dụng **phân mảnh (sharding)**. Với việc phân mảnh, bạn có nhiều nút cơ sở dữ liệu. Bạn lấy một phần dữ liệu cần được ghi, áp dụng một hàm băm nào đó cho khóa của dữ liệu, và dựa trên kết quả của hàm đó để biết nơi gửi dữ liệu. Để lấy một ví dụ rất đơn giản (và thực sự tồi tệ), hãy tưởng tượng rằng các bản ghi khách hàng từ A–M đi đến một phiên bản cơ sở dữ liệu, và N–Z đến một phiên bản khác. Bạn có thể tự mình quản lý điều này trong ứng dụng của mình, nhưng một số cơ sở dữ liệu, như Mongo, xử lý phần lớn cho bạn.
+
+Sự phức tạp với việc phân mảnh cho các lượt ghi đến từ việc xử lý các truy vấn. Việc tra cứu một bản ghi riêng lẻ là dễ dàng, vì tôi chỉ có thể áp dụng hàm băm để tìm phiên bản nào dữ liệu nên ở trên, và sau đó truy xuất nó từ mảnh đúng. Nhưng còn các truy vấn kéo dài dữ liệu trên nhiều nút thì sao—ví dụ, tìm tất cả các khách hàng trên 18 tuổi? Nếu bạn muốn truy vấn tất cả các mảnh, bạn hoặc là cần phải truy vấn từng mảnh riêng lẻ và nối kết quả trong bộ nhớ, hoặc có một kho lưu trữ đọc thay thế nơi cả hai bộ dữ liệu đều có sẵn. Thường thì việc truy vấn trên các mảnh được xử lý bởi một cơ chế bất đồng bộ, sử dụng các kết quả được lưu trong bộ nhớ đệm. Ví dụ, Mongo sử dụng các công việc `map/reduce` để thực hiện các truy vấn này.
+
+Một trong những câu hỏi nảy sinh với các hệ thống được phân mảnh là, điều gì sẽ xảy ra nếu tôi muốn thêm một nút cơ sở dữ liệu khác? Trong quá khứ, điều này thường đòi hỏi thời gian ngừng hoạt động đáng kể—đặc biệt là đối với các cụm lớn—vì bạn có thể phải gỡ bỏ toàn bộ cơ sở dữ liệu và cân bằng lại dữ liệu. Gần đây hơn, nhiều hệ thống hỗ trợ thêm các mảnh bổ sung vào một hệ thống trực tiếp, nơi việc cân bằng lại dữ liệu diễn ra ở chế độ nền; ví dụ, Cassandra xử lý điều này rất tốt. Tuy nhiên, việc thêm các mảnh vào một cụm hiện có không dành cho những người yếu tim, vì vậy hãy chắc chắn rằng bạn kiểm thử điều này một cách kỹ lưỡng.
+
+Việc phân mảnh cho các lượt ghi có thể mở rộng quy mô cho khối lượng ghi, nhưng có thể không cải thiện khả năng phục hồi. Nếu các bản ghi khách hàng A–M luôn đi đến Phiên bản X, và Phiên bản X không khả dụng, quyền truy cập vào các bản ghi A–M có thể bị mất. Cassandra cung cấp các khả năng bổ sung ở đây, nơi chúng ta có thể đảm bảo rằng dữ liệu được sao chép đến nhiều nút trong một **vòng (ring)** (thuật ngữ của Cassandra cho một tập hợp các nút Cassandra).
+
+Như bạn có thể đã suy ra từ tổng quan ngắn gọn này, việc mở rộng quy mô cơ sở dữ liệu cho các lượt ghi là nơi mọi thứ trở nên rất phức tạp, và là nơi các khả năng của các cơ sở dữ liệu khác nhau thực sự bắt đầu trở nên khác biệt. Tôi thường thấy mọi người thay đổi công nghệ cơ sở dữ liệu khi họ bắt đầu đạt đến giới hạn về mức độ dễ dàng họ có thể mở rộng quy mô khối lượng ghi hiện tại của mình. Nếu điều này xảy ra với bạn, việc mua một chiếc máy lớn hơn thường là cách nhanh nhất để giải quyết vấn đề, nhưng ở chế độ nền, bạn có thể muốn xem xét các hệ thống như Cassandra, Mongo, hoặc Riak để xem liệu các mô hình mở rộng quy mô thay thế của chúng có thể cung cấp cho bạn một giải pháp dài hạn tốt hơn hay không.
+
+##### **Cơ sở hạ tầng Cơ sở dữ liệu Dùng chung (Shared Database Infrastructure)**
+
+Một số loại cơ sở dữ liệu, chẳng hạn như `RDBMS` truyền thống, tách biệt khái niệm của chính cơ sở dữ liệu và `schema`. Điều này có nghĩa là một cơ sở dữ liệu đang chạy có thể lưu trữ nhiều `schema` độc lập, một cho mỗi microservice. Điều này có thể rất hữu ích về mặt giảm số lượng máy chúng ta cần để chạy hệ thống của mình, nhưng chúng ta đang giới thiệu một điểm lỗi duy nhất đáng kể. Nếu cơ sở hạ tầng cơ sở dữ liệu này bị lỗi, nó có thể ảnh hưởng đến nhiều microservice cùng một lúc, có khả năng dẫn đến một sự cố thảm khốc. Nếu bạn đang chạy loại thiết lập này, hãy đảm bảo bạn xem xét các rủi ro. Và hãy rất chắc chắn rằng chính cơ sở dữ liệu đó có khả năng phục hồi nhất có thể.
+
+##### **CQRS**
+
+Mẫu hình **Tách biệt Trách nhiệm Truy vấn Lệnh (Command-Query Responsibility Segregation - CQRS)** đề cập đến một mô hình thay thế để lưu trữ và truy vấn thông tin. Với các cơ sở dữ liệu thông thường, chúng ta sử dụng một hệ thống để thực hiện các sửa đổi đối với dữ liệu và truy vấn dữ liệu. Với CQRS, một phần của hệ thống xử lý các **lệnh (commands)**, ghi lại các yêu cầu để sửa đổi trạng thái, trong khi một phần khác của hệ thống xử lý các **truy vấn (queries)**.
+
+Các lệnh đến yêu cầu các thay đổi trạng thái. Các lệnh này được xác thực, và nếu chúng hoạt động, chúng sẽ được áp dụng cho mô hình. Các lệnh nên chứa thông tin về ý định của chúng. Chúng có thể được xử lý đồng bộ hoặc bất đồng bộ, cho phép các mô hình khác nhau để xử lý việc mở rộng quy mô; ví dụ, chúng ta có thể chỉ cần xếp hàng các yêu cầu đến và xử lý chúng sau.
+
+Điểm mấu chốt ở đây là các mô hình nội bộ được sử dụng để xử lý các lệnh và truy vấn hoàn toàn riêng biệt. Ví dụ, tôi có thể chọn xử lý và xử lý các lệnh dưới dạng các sự kiện, có lẽ chỉ cần lưu trữ danh sách các lệnh trong một kho dữ liệu (một quá trình được gọi là **nguồn sự kiện - event sourcing**). Mô hình truy vấn của tôi có thể truy vấn một kho sự kiện và tạo ra các **hình chiếu (projections)** từ các sự kiện được lưu trữ để lắp ráp trạng thái của các đối tượng miền, hoặc có thể chỉ cần lấy một nguồn cấp dữ liệu từ phần lệnh của hệ thống để cập nhật một loại kho lưu trữ khác. Theo nhiều cách, chúng ta nhận được những lợi ích tương tự của các bản sao chỉ đọc mà chúng ta đã thảo luận trước đó, mà không có yêu cầu rằng kho lưu trữ nền tảng cho các bản sao phải giống như kho dữ liệu được sử dụng để xử lý các sửa đổi dữ liệu.
+
+Hình thức tách biệt này cho phép các loại mở rộng quy mô khác nhau. Các phần lệnh và truy vấn của hệ thống của chúng ta có thể sống trong các dịch vụ khác nhau, hoặc trên các phần cứng khác nhau, và có thể sử dụng các loại kho dữ liệu hoàn toàn khác nhau. Điều này có thể mở ra một số lượng lớn các cách để xử lý quy mô. Bạn thậm chí có thể hỗ trợ các loại định dạng đọc khác nhau bằng cách có nhiều triển khai của phần truy vấn, có lẽ hỗ trợ một biểu diễn dựa trên đồ thị của dữ liệu của bạn, hoặc một dạng khóa/giá trị của dữ liệu của bạn.
+
+Tuy nhiên, hãy cẩn thận: loại mẫu hình này là một sự thay đổi khá lớn so với một mô hình nơi một kho dữ liệu duy nhất xử lý tất cả các hoạt động CRUD của chúng ta. Tôi đã thấy nhiều hơn một đội ngũ phát triển có kinh nghiệm gặp khó khăn trong việc làm đúng mẫu hình này!
+
+*(Phần tiếp theo sẽ thảo luận về "Caching".)*
+
+Chắc chắn rồi! Chúng ta sẽ đi tiếp với phần "Caching", một kỹ thuật tối ưu hóa hiệu suất cực kỳ quan trọng và phổ biến.
+
+---
+
+#### **Bộ nhớ đệm (Caching)**
+
+**Bộ nhớ đệm (Caching)** là một tối ưu hóa hiệu suất thường được sử dụng, theo đó kết quả trước đó của một số hoạt động được lưu trữ, để các yêu cầu tiếp theo có thể sử dụng giá trị được lưu trữ này thay vì tốn thời gian và tài nguyên tính toán lại giá trị. Thông thường, việc lưu vào bộ nhớ đệm là về việc loại bỏ các chuyến đi khứ hồi không cần thiết đến cơ sở dữ liệu hoặc các dịch vụ khác để phục vụ kết quả nhanh hơn. Được sử dụng tốt, nó có thể mang lại những lợi ích hiệu suất to lớn. Lý do mà `HTTP` mở rộng quy mô rất tốt trong việc xử lý số lượng lớn các yêu cầu là do khái niệm về bộ nhớ đệm được tích hợp sẵn.
+
+Ngay cả với một ứng dụng web `monolithic` đơn giản, cũng có khá nhiều lựa chọn về nơi và cách lưu vào bộ nhớ đệm. Với một kiến trúc microservice, nơi mỗi dịch vụ là nguồn dữ liệu và hành vi của riêng nó, chúng ta có nhiều lựa chọn hơn để đưa ra về nơi và cách lưu vào bộ nhớ đệm. Với một hệ thống phân tán, chúng ta thường nghĩ về việc lưu vào bộ nhớ đệm hoặc ở **phía máy khách (client side)** hoặc ở **phía máy chủ (server side)**. Nhưng cái nào là tốt nhất?
+
+##### **Bộ nhớ đệm phía Máy khách, Proxy, và Phía Máy chủ (Client-Side, Proxy, and Server-Side Caching)**
+
+*   Trong **bộ nhớ đệm phía máy khách (client-side caching)**, máy khách lưu trữ kết quả được lưu trong bộ nhớ đệm. Máy khách có quyền quyết định khi nào (và liệu) nó sẽ đi và truy xuất một bản sao mới. Lý tưởng nhất, dịch vụ hạ nguồn sẽ cung cấp các gợi ý để giúp máy khách hiểu phải làm gì với phản hồi, để nó biết khi nào và liệu có nên thực hiện một yêu cầu mới hay không.
+*   Với **bộ nhớ đệm proxy (proxy caching)**, một `proxy` được đặt giữa máy khách và máy chủ. Một ví dụ tuyệt vời của điều này là sử dụng một `reverse proxy` hoặc **mạng phân phối nội dung (content delivery network - CDN)**.
+*   Với **bộ nhớ đệm phía máy chủ (server-side caching)**, máy chủ xử lý trách nhiệm lưu vào bộ nhớ đệm, có lẽ sử dụng một hệ thống như Redis hoặc Memcache, hoặc thậm chí là một bộ nhớ đệm trong bộ nhớ đơn giản.
+
+Cái nào có ý nghĩa nhất phụ thuộc vào những gì bạn đang cố gắng tối ưu hóa. Bộ nhớ đệm phía máy khách có thể giúp giảm đáng kể các cuộc gọi mạng, và có thể là một trong những cách nhanh nhất để giảm tải trên một dịch vụ hạ nguồn. Trong trường hợp này, máy khách chịu trách nhiệm về hành vi lưu vào bộ nhớ đệm, và nếu bạn muốn thực hiện các thay đổi về cách lưu vào bộ nhớ đệm được thực hiện, việc triển khai các thay đổi cho một số lượng lớn người tiêu dùng có thể khó khăn. Việc **vô hiệu hóa (invalidation)** dữ liệu cũ cũng có thể phức tạp hơn, mặc dù chúng ta sẽ thảo luận về một số cơ chế đối phó cho điều này trong giây lát.
+
+Với bộ nhớ đệm `proxy`, mọi thứ đều mờ đục đối với cả máy khách và máy chủ. Đây thường là một cách rất đơn giản để thêm bộ nhớ đệm vào một hệ thống hiện có. Nếu `proxy` được thiết kế để lưu vào bộ nhớ đệm lưu lượng truy cập chung, nó cũng có thể lưu vào bộ nhớ đệm nhiều hơn một dịch vụ; một ví dụ phổ biến là một `reverse proxy` như Squid hoặc Varnish, có thể lưu vào bộ nhớ đệm bất kỳ lưu lượng `HTTP` nào. Việc có một `proxy` giữa máy khách và máy chủ có giới thiệu thêm các bước nhảy mạng (`network hops`), mặc dù theo kinh nghiệm của tôi, điều này rất hiếm khi gây ra vấn đề, vì các tối ưu hóa hiệu suất do việc lưu vào bộ nhớ đệm mang lại vượt xa bất kỳ chi phí mạng bổ sung nào.
+
+Với bộ nhớ đệm phía máy chủ, mọi thứ đều mờ đục đối với các máy khách; chúng không cần phải lo lắng về bất cứ điều gì. Với một bộ nhớ đệm gần hoặc bên trong một ranh giới dịch vụ, có thể dễ dàng hơn để lý giải về những thứ như việc vô hiệu hóa dữ liệu, hoặc theo dõi và tối ưu hóa các lần truy cập bộ nhớ đệm. Trong một tình huống mà bạn có nhiều loại máy khách, một bộ nhớ đệm phía máy chủ có thể là cách nhanh nhất để cải thiện hiệu suất.
+
+Đối với mọi trang web hướng tới công chúng mà tôi đã làm việc, chúng tôi cuối cùng đã thực hiện một sự kết hợp của cả ba cách tiếp cận. Nhưng đối với nhiều hơn một hệ thống phân tán, tôi đã có thể không cần lưu vào bộ nhớ đệm gì cả. Nhưng tất cả đều quy về việc biết bạn cần xử lý tải nào, dữ liệu của bạn cần tươi đến mức nào, và hệ thống của bạn có thể làm gì ngay bây giờ. Việc biết rằng bạn có một số công cụ khác nhau tùy ý sử dụng chỉ là sự khởi đầu.
+
+##### **Bộ nhớ đệm trong HTTP (Caching in HTTP)**
+
+`HTTP` cung cấp một số điều khiển thực sự hữu ích để giúp chúng ta lưu vào bộ nhớ đệm hoặc ở phía máy khách hoặc phía máy chủ, điều này đáng để hiểu ngay cả khi bạn không sử dụng `HTTP`.
+
+*   **Thứ nhất**, với `HTTP`, chúng ta có thể sử dụng các chỉ thị **cache-control** trong các phản hồi của mình cho các máy khách. Những chỉ thị này cho các máy khách biết liệu chúng có nên lưu vào bộ nhớ đệm tài nguyên hay không, và nếu có thì trong bao lâu (tính bằng giây). Chúng ta cũng có tùy chọn đặt một tiêu đề **Expires**, nơi thay vì nói một phần nội dung có thể được lưu trong bộ nhớ đệm trong bao lâu, chúng ta chỉ định một thời gian và ngày mà tại đó một tài nguyên nên được coi là cũ và được lấy lại. Bản chất của các tài nguyên bạn đang chia sẻ quyết định cái nào có khả năng phù hợp nhất. Nội dung trang web tĩnh tiêu chuẩn như `CSS` hoặc hình ảnh thường phù hợp tốt với một thời gian sống (`time to live - TTL`) `cache-control` đơn giản. Mặt khác, nếu bạn biết trước khi nào một phiên bản mới của một tài nguyên sẽ được cập nhật, việc đặt một tiêu đề `Expires` sẽ có ý nghĩa hơn. Tất cả điều này rất hữu ích trong việc ngăn chặn một máy khách thậm chí cần phải thực hiện một yêu cầu đến máy chủ ngay từ đầu.
+*   Ngoài `cache-control` và `Expires`, chúng ta có một tùy chọn khác trong kho vũ khí `HTTP` của mình: **Entity Tags**, hay **ETags**. Một `ETag` được sử dụng để xác định xem giá trị của một tài nguyên có thay đổi hay không. Nếu tôi cập nhật một bản ghi khách hàng, `URI` đến tài nguyên là giống nhau, nhưng giá trị là khác, vì vậy tôi sẽ mong đợi `ETag` thay đổi. Điều này trở nên mạnh mẽ khi chúng ta đang sử dụng cái được gọi là `GET` có điều kiện. Khi thực hiện một yêu cầu `GET`, chúng ta có thể chỉ định các tiêu đề bổ sung, yêu cầu dịch vụ chỉ gửi cho chúng ta tài nguyên nếu một số tiêu chí được đáp ứng.
+
+Ví dụ, hãy tưởng tượng chúng ta lấy một bản ghi khách hàng, và `ETag` của nó trả về là `o5t6fkd2sa`. Sau đó, có lẽ vì một chỉ thị `cache-control` đã cho chúng ta biết rằng tài nguyên nên được coi là cũ, chúng ta muốn đảm bảo rằng chúng ta nhận được phiên bản mới nhất. Khi đưa ra yêu cầu `GET` tiếp theo, chúng ta có thể truyền vào một `If-None-Match: o5t6fkd2sa`. Điều này cho máy chủ biết rằng chúng ta muốn tài nguyên tại `URI` được chỉ định, trừ khi nó đã khớp với giá trị `ETag` này. Nếu chúng ta đã có phiên bản cập nhật, dịch vụ sẽ gửi cho chúng ta một phản hồi **304 Not Modified**, cho chúng ta biết rằng chúng ta có phiên bản mới nhất. Nếu có một phiên bản mới hơn, chúng ta sẽ nhận được một **200 OK** với tài nguyên đã thay đổi, và một `ETag` mới cho tài nguyên đó.
+
+Thực tế là các điều khiển này được tích hợp vào một đặc tả được sử dụng rộng rãi như vậy có nghĩa là chúng ta có thể tận dụng rất nhiều phần mềm có sẵn xử lý việc lưu vào bộ nhớ đệm cho chúng ta. Các `proxy` ngược như Squid hoặc Varnish có thể nằm một cách minh bạch trên mạng giữa máy khách và máy chủ, lưu trữ và hết hạn nội dung được lưu trong bộ nhớ đệm khi cần thiết. Các hệ thống này được thiết kế để phục vụ một số lượng lớn các yêu cầu đồng thời rất nhanh, và là một cách tiêu chuẩn để mở rộng quy mô các trang web hướng tới công chúng. Các `CDN` như CloudFront của AWS hoặc Akamai có thể đảm bảo rằng các yêu cầu được định tuyến đến các bộ nhớ đệm gần máy khách gọi, đảm bảo rằng lưu lượng truy cập không phải đi nửa vòng trái đất khi nó cần. Và một cách tầm thường hơn, các thư viện máy khách `HTTP` và các bộ nhớ đệm máy khách có thể xử lý rất nhiều công việc này cho chúng ta.
+
+`ETags`, `Expires`, và `cache-control` có thể chồng chéo một chút, và nếu bạn không cẩn thận, bạn có thể cuối cùng đưa ra thông tin mâu thuẫn nếu bạn quyết định sử dụng tất cả chúng! Để có một cuộc thảo luận sâu hơn về các giá trị khác nhau, hãy xem cuốn sách *REST In Practice* (O’Reilly) hoặc đọc phần 13 của đặc tả `HTTP 1.1`, mô tả cách cả máy khách và máy chủ được cho là sẽ triển khai các điều khiển khác nhau này.
+
+Dù bạn quyết định sử dụng `HTTP` làm giao thức giữa các dịch vụ hay không, việc lưu vào bộ nhớ đệm ở máy khách và giảm nhu cầu đi lại khứ hồi đến máy khách là rất đáng giá. Nếu bạn quyết định chọn một giao thức khác, hãy hiểu khi nào và làm thế nào bạn có thể cung cấp các gợi ý cho máy khách để giúp nó hiểu nó có thể lưu vào bộ nhớ đệm trong bao lâu.
+
+##### **Bộ nhớ đệm cho Lượt ghi (Caching for Writes)**
+
+Mặc dù bạn sẽ thấy mình sử dụng bộ nhớ đệm cho các lượt đọc thường xuyên hơn, có một số trường hợp sử dụng mà việc lưu vào bộ nhớ đệm cho các lượt ghi có ý nghĩa. Ví dụ, nếu bạn sử dụng một **bộ nhớ đệm ghi sau (write-behind cache)**, bạn có thể ghi vào một bộ nhớ đệm cục bộ, và tại một thời điểm nào đó sau đó, dữ liệu sẽ được đẩy vào một nguồn hạ nguồn, có lẽ là nguồn dữ liệu chính tắc. Điều này có thể hữu ích khi bạn có các đợt ghi, hoặc khi có một cơ hội tốt rằng cùng một dữ liệu sẽ được ghi nhiều lần. Khi được sử dụng để đệm và có khả năng gộp các lượt ghi, các bộ nhớ đệm ghi sau có thể là một tối ưu hóa hiệu suất bổ sung hữu ích.
+
+Với một bộ nhớ đệm ghi sau, nếu các lượt ghi được đệm là đủ bền vững, ngay cả khi dịch vụ hạ nguồn không khả dụng, chúng ta có thể xếp hàng các lượt ghi và gửi chúng qua khi nó khả dụng trở lại.
+
+##### **Bộ nhớ đệm cho Khả năng phục hồi (Caching for Resilience)**
+
+Bộ nhớ đệm có thể được sử dụng để triển khai khả năng phục hồi trong trường hợp thất bại. Với bộ nhớ đệm phía máy khách, nếu dịch vụ hạ nguồn không khả dụng, máy khách có thể quyết định chỉ cần sử dụng dữ liệu được lưu trong bộ nhớ đệm nhưng có khả năng đã cũ. Chúng ta cũng có thể sử dụng một cái gì đó như một `proxy` ngược để phục vụ dữ liệu cũ. Đối với một số hệ thống, việc khả dụng ngay cả với dữ liệu cũ còn tốt hơn là không trả về kết quả gì cả, nhưng đó là một quyết định bạn sẽ phải đưa ra. Rõ ràng, nếu chúng ta không có dữ liệu được yêu cầu trong bộ nhớ đệm, thì chúng ta không thể làm gì nhiều để giúp đỡ, nhưng có những cách để giảm thiểu điều này.
+
+Một kỹ thuật tôi đã thấy được sử dụng tại *The Guardian*, và sau đó ở những nơi khác, là **thu thập dữ liệu (crawl)** trang web trực tiếp hiện có một cách định kỳ để tạo ra một phiên bản tĩnh của trang web có thể được phục vụ trong trường hợp xảy ra sự cố. Mặc dù phiên bản được thu thập này không tươi như nội dung được lưu trong bộ nhớ đệm được phục vụ từ hệ thống trực tiếp, trong trường hợp khẩn cấp, nó có thể đảm bảo rằng một phiên bản của trang web sẽ được hiển thị.
+
+##### **Ẩn Nguồn gốc (Hiding the Origin)**
+
+Với một bộ nhớ đệm thông thường, nếu một yêu cầu dẫn đến một lần bỏ lỡ bộ nhớ đệm (`cache miss`), yêu cầu sẽ tiếp tục đến **nguồn gốc (origin)** để lấy dữ liệu mới với người gọi bị chặn, chờ đợi kết quả. Theo lẽ thường, điều này là có thể mong đợi. Nhưng nếu chúng ta bị một lần bỏ lỡ bộ nhớ đệm lớn, có lẽ vì toàn bộ một máy (hoặc một nhóm máy) cung cấp bộ nhớ đệm của chúng ta bị lỗi, một số lượng lớn các yêu cầu sẽ đến nguồn gốc.
+
+Đối với những dịch vụ phục vụ dữ liệu có khả năng lưu vào bộ nhớ đệm cao, việc chính nguồn gốc được mở rộng quy mô để chỉ xử lý một phần nhỏ của tổng lưu lượng truy cập là phổ biến, vì hầu hết các yêu cầu đều được phục vụ từ bộ nhớ của các bộ nhớ đệm nằm trước nguồn gốc. Nếu chúng ta đột nhiên có một **đàn bò chạy tán loạn (thundering herd)** do toàn bộ một khu vực bộ nhớ đệm biến mất, nguồn gốc của chúng ta có thể bị tấn công đến mức không thể tồn tại.
+
+Một cách để bảo vệ nguồn gốc trong một tình huống như vậy là không bao giờ cho phép các yêu cầu đi đến nguồn gốc ngay từ đầu. Thay vào đó, chính nguồn gốc sẽ điền vào bộ nhớ đệm một cách bất đồng bộ khi cần thiết, như được hiển thị trong Hình 11-7. Nếu một lần bỏ lỡ bộ nhớ đệm xảy ra, điều này sẽ kích hoạt một sự kiện mà nguồn gốc có thể nhận được, cảnh báo nó rằng nó cần phải điền lại bộ nhớ đệm. Vì vậy, nếu toàn bộ một mảnh đã biến mất, chúng ta có thể xây dựng lại bộ nhớ đệm ở chế độ nền. Chúng ta có thể quyết định chặn yêu cầu ban đầu đang chờ khu vực được điền lại, nhưng điều này có thể gây ra sự tranh chấp trên chính bộ nhớ đệm, dẫn đến các vấn đề khác. Có nhiều khả năng hơn nếu chúng ta ưu tiên giữ cho hệ thống ổn định rằng chúng ta sẽ làm thất bại yêu cầu ban đầu, nhưng nó sẽ thất bại nhanh chóng.
+
+![alt text](<images/Screenshot from 2025-09-29 13-23-09.png>)
+
+**Hình 11-7.** *Ẩn nguồn gốc khỏi máy khách và điền vào bộ nhớ đệm một cách bất đồng bộ*
+
+Cách tiếp cận này có thể không có ý nghĩa đối với một số tình huống, nhưng nó có thể là một cách để đảm bảo hệ thống vẫn hoạt động khi các bộ phận của nó bị lỗi. Bằng cách làm thất bại các yêu cầu nhanh chóng, và đảm bảo chúng ta không chiếm dụng tài nguyên hoặc tăng độ trễ, chúng ta tránh được một lỗi trong bộ nhớ đệm của mình khỏi việc xếp tầng xuống hạ nguồn và cho mình một cơ hội để phục hồi.
+
+##### **Giữ cho nó Đơn giản (Keep It Simple)**
+
+Hãy cẩn thận về việc lưu vào bộ nhớ đệm ở quá nhiều nơi! Càng có nhiều bộ nhớ đệm giữa bạn và nguồn dữ liệu mới, dữ liệu càng có thể cũ, và càng khó để xác định độ tươi của dữ liệu mà một máy khách cuối cùng thấy. Điều này có thể đặc biệt có vấn đề với một kiến trúc microservice nơi bạn có nhiều dịch vụ tham gia vào một chuỗi cuộc gọi. Một lần nữa, càng có nhiều bộ nhớ đệm, càng khó để đánh giá độ tươi của bất kỳ phần dữ liệu nào. Vì vậy, nếu bạn nghĩ rằng một bộ nhớ đệm là một ý tưởng tốt, hãy giữ nó đơn giản, gắn bó với một cái, và suy nghĩ cẩn thận trước khi thêm nhiều hơn!
+
+##### **Nhiễm độc Bộ nhớ đệm: Một Câu chuyện Cảnh báo (Cache Poisoning: A Cautionary Tale)**
+
+Với việc lưu vào bộ nhớ đệm, chúng ta thường nghĩ rằng nếu chúng ta làm sai, điều tồi tệ nhất có thể xảy ra là chúng ta phục vụ dữ liệu cũ trong một thời gian. Nhưng điều gì sẽ xảy ra nếu bạn cuối cùng phục vụ dữ liệu cũ mãi mãi? Trước đây, tôi đã đề cập đến dự án tôi đã làm việc, nơi chúng tôi đang sử dụng một ứng dụng bóp nghẹt để giúp chặn các cuộc gọi đến nhiều hệ thống kế thừa với mục đích loại bỏ chúng dần dần. Ứng dụng của chúng tôi hoạt động hiệu quả như một `proxy`. Lưu lượng truy cập đến ứng dụng của chúng tôi được định tuyến qua ứng dụng kế thừa. Trên đường trở về, chúng tôi đã làm một vài việc dọn dẹp; ví dụ, chúng tôi đã đảm bảo rằng các kết quả từ ứng dụng kế thừa có các tiêu đề bộ nhớ đệm `HTTP` phù hợp được áp dụng.
+
+Một ngày nọ, ngay sau một bản phát hành thông thường, một điều kỳ lạ bắt đầu xảy ra. Một lỗi đã được giới thiệu theo đó một tập hợp con nhỏ các trang đang rơi qua một điều kiện logic trong mã chèn tiêu đề bộ nhớ đệm của chúng tôi, dẫn đến việc chúng tôi không thay đổi tiêu đề gì cả. Thật không may, ứng dụng hạ nguồn này cũng đã được thay đổi vào một thời điểm nào đó trước đây để bao gồm một tiêu đề `Expires: Never HTTP`. Điều này đã không có tác dụng gì trước đó, vì chúng tôi đang ghi đè tiêu đề này. Bây giờ thì không.
+
+Ứng dụng của chúng tôi đã sử dụng rất nhiều Squid để lưu vào bộ nhớ đệm lưu lượng `HTTP`, và chúng tôi đã nhận thấy vấn đề khá nhanh khi chúng tôi thấy nhiều yêu cầu hơn bỏ qua chính Squid để đến các máy chủ ứng dụng của chúng tôi. Chúng tôi đã sửa mã tiêu đề bộ nhớ đệm và đẩy ra một bản phát hành, và cũng đã xóa thủ công vùng liên quan của bộ nhớ đệm Squid. Tuy nhiên, điều đó không đủ.
+
+Như tôi đã đề cập trước đó, bạn có thể lưu vào bộ nhớ đệm ở nhiều nơi. Khi nói đến việc phục vụ nội dung cho người dùng của một ứng dụng web hướng tới công chúng, bạn có thể có nhiều bộ nhớ đệm giữa bạn và khách hàng của mình. Không chỉ bạn có thể đang đặt một `CDN` ở phía trước trang web của mình, mà một số ISP cũng sử dụng bộ nhớ đệm. Bạn có thể kiểm soát những bộ nhớ đệm đó không? Và ngay cả khi bạn có thể, có một bộ nhớ đệm mà bạn có ít quyền kiểm soát: bộ nhớ đệm trong trình duyệt của người dùng.
+
+Những trang có `Expires: Never` bị kẹt trong bộ nhớ đệm của nhiều người dùng của chúng tôi, và sẽ không bao giờ bị vô hiệu hóa cho đến khi bộ nhớ đệm đầy hoặc người dùng tự xóa chúng. Rõ ràng chúng tôi không thể làm cho một trong hai điều đó xảy ra; lựa chọn duy nhất của chúng tôi là thay đổi các `URL` của các trang này để chúng được lấy lại.
+
+Việc lưu vào bộ nhớ đệm có thể rất mạnh mẽ, nhưng bạn cần phải hiểu toàn bộ đường đi của dữ liệu được lưu trong bộ nhớ đệm từ nguồn đến đích để thực sự đánh giá được sự phức tạp của nó và những gì có thể đi sai.
+
+*(Phần tiếp theo và cuối cùng của chương này sẽ thảo luận về "Autoscaling" và "CAP Theorem".)*
+
+Chắc chắn rồi! Chúng ta sẽ đi tiếp với hai chủ đề cuối cùng và cực kỳ quan trọng trong việc xây dựng hệ thống ở quy mô lớn: "Autoscaling" và "CAP Theorem".
+
+---
+
+#### **Tự động Mở rộng quy mô (Autoscaling)**
+
+Nếu bạn đủ may mắn để có được việc cấp phát các máy chủ ảo hoàn toàn có thể tự động hóa, và có thể tự động hóa hoàn toàn việc triển khai các phiên bản microservice của mình, thì bạn có các khối xây dựng để cho phép bạn tự động mở rộng quy mô các microservice của mình.
+
+##### **Mở rộng quy mô Dự đoán và Phản ứng**
+
+*   Ví dụ, bạn cũng có thể để việc mở rộng quy mô được kích hoạt bởi các xu hướng đã biết. Bạn có thể biết rằng tải cao điểm của hệ thống của bạn là từ 9 giờ sáng đến 5 giờ chiều, vì vậy bạn khởi động các phiên bản bổ sung vào lúc 8:45 sáng, và tắt chúng vào lúc 5:15 chiều. Nếu bạn đang sử dụng một cái gì đó như AWS (có hỗ trợ tự động mở rộng quy mô rất tốt), việc tắt các phiên bản bạn không cần nữa sẽ giúp tiết kiệm tiền. Bạn sẽ cần dữ liệu để hiểu tải của mình thay đổi như thế nào theo thời gian, từ ngày này sang ngày khác, tuần này sang tuần khác. Một số doanh nghiệp cũng có các chu kỳ theo mùa rõ ràng, vì vậy bạn có thể cần dữ liệu từ khá lâu để đưa ra các phán đoán đúng đắn.
+*   Mặt khác, bạn có thể **phản ứng (reactive)**, khởi động các phiên bản bổ sung khi bạn thấy tải tăng lên hoặc một phiên bản bị lỗi, và loại bỏ các phiên bản khi bạn không còn cần chúng nữa. Việc biết bạn có thể mở rộng quy mô nhanh như thế nào một khi bạn phát hiện ra một xu hướng tăng là chìa khóa. Nếu bạn biết mình chỉ nhận được thông báo vài phút về sự gia tăng tải, nhưng việc mở rộng quy mô sẽ mất ít nhất 10 phút, bạn biết mình sẽ cần phải giữ thêm năng lực xung quanh để bắc cầu qua khoảng trống này. Việc có một bộ kiểm thử tải tốt gần như là cần thiết ở đây. Bạn có thể sử dụng chúng để kiểm tra các quy tắc tự động mở rộng quy mô của mình. Nếu bạn không có các bài kiểm thử có thể tái tạo các tải khác nhau sẽ kích hoạt việc mở rộng quy mô, thì bạn sẽ chỉ tìm ra trong sản xuất nếu bạn đã làm sai các quy tắc. Và hậu quả của sự thất bại không hề nhỏ!
+
+Một trang tin tức là một ví dụ tuyệt vời về một loại hình kinh doanh mà bạn có thể muốn có một sự kết hợp của mở rộng quy mô **dự đoán (predictive)** và phản ứng. Trên trang tin tức cuối cùng tôi đã làm việc, chúng tôi đã thấy các xu hướng hàng ngày rất rõ ràng, với lượt xem tăng từ buổi sáng đến giờ ăn trưa và sau đó bắt đầu giảm. Mẫu hình này được lặp lại hàng ngày, với lưu lượng truy cập ít rõ rệt hơn vào cuối tuần. Điều đó đã cung cấp cho bạn một xu hướng khá rõ ràng có thể thúc đẩy việc mở rộng quy mô chủ động lên (và xuống) các tài nguyên. Mặt khác, một câu chuyện tin tức lớn sẽ gây ra một sự tăng đột biến bất ngờ, đòi hỏi nhiều năng lực hơn thường là trong thời gian ngắn.
+
+Tôi thực sự thấy việc tự động mở rộng quy mô được sử dụng nhiều hơn để xử lý sự cố của các phiên bản hơn là để phản ứng với các điều kiện tải. AWS cho phép bạn chỉ định các quy tắc như "Phải có ít nhất 5 phiên bản trong nhóm này," vì vậy nếu một phiên bản bị lỗi, một phiên bản mới sẽ tự động được khởi chạy. Tôi đã thấy cách tiếp cận này dẫn đến một trò chơi đập chuột chũi vui nhộn khi ai đó quên tắt quy tắc và sau đó cố gắng gỡ bỏ các phiên bản để bảo trì, chỉ để thấy chúng tiếp tục khởi động lại!
+
+Cả việc mở rộng quy mô phản ứng và dự đoán đều rất hữu ích, và có thể giúp bạn hiệu quả hơn nhiều về chi phí nếu bạn đang sử dụng một nền tảng cho phép bạn chỉ trả tiền cho các tài nguyên điện toán bạn sử dụng. Nhưng chúng cũng đòi hỏi sự quan sát cẩn thận dữ liệu có sẵn cho bạn. Tôi sẽ đề nghị sử dụng tự động mở rộng quy mô cho các điều kiện lỗi trước trong khi bạn thu thập dữ liệu. Một khi bạn muốn bắt đầu mở rộng quy mô cho tải, hãy chắc chắn rằng bạn rất thận trọng về việc giảm quy mô quá nhanh. Trong hầu hết các tình huống, việc có nhiều năng lực tính toán hơn trong tay so với bạn cần tốt hơn nhiều so với việc không có đủ!
+
+#### **Định lý CAP (CAP Theorem)**
+
+Chúng ta muốn có tất cả, nhưng thật không may, chúng ta biết rằng chúng ta không thể. Và khi nói đến các hệ thống phân tán như những hệ thống chúng ta xây dựng bằng kiến trúc microservice, chúng ta thậm chí còn có một bằng chứng toán học cho chúng ta biết rằng chúng ta không thể. Bạn có thể đã nghe về **định lý CAP**, đặc biệt là trong các cuộc thảo luận về giá trị của các loại kho dữ liệu khác nhau. Về cốt lõi, nó cho chúng ta biết rằng trong một hệ thống phân tán, chúng ta có ba thứ có thể đánh đổi với nhau: **tính nhất quán (consistency)**, **tính sẵn có (availability)**, và **khả năng chịu lỗi phân vùng (partition tolerance)**. Cụ thể, định lý cho chúng ta biết rằng chúng ta chỉ được giữ hai trong một chế độ lỗi.
+
+*   **Tính nhất quán (Consistency)** là đặc tính của hệ thống mà tôi sẽ nhận được cùng một câu trả lời nếu tôi đến nhiều nút.
+*   **Tính sẵn có (Availability)** có nghĩa là mọi yêu cầu đều nhận được một phản hồi.
+*   **Khả năng chịu lỗi phân vùng (Partition tolerance)** là khả năng của hệ thống để xử lý thực tế rằng giao tiếp giữa các bộ phận của nó đôi khi là không thể.
+
+Kể từ khi Eric Brewer công bố phỏng đoán ban đầu của mình, ý tưởng này đã có được một bằng chứng toán học. Tôi sẽ không đi sâu vào toán học của bằng chứng, vì không chỉ đây không phải là loại sách đó, mà tôi còn có thể đảm bảo rằng tôi sẽ làm sai. Thay vào đó, hãy sử dụng một số ví dụ thực tế sẽ giúp chúng ta hiểu rằng dưới tất cả những điều đó, định lý CAP là một sự chắt lọc của một tập hợp lý luận rất logic.
+
+Chúng ta đã nói về một số kỹ thuật mở rộng quy mô cơ sở dữ liệu đơn giản. Hãy sử dụng một trong số này để thăm dò các ý tưởng đằng sau định lý CAP. Hãy tưởng tượng rằng dịch vụ hàng tồn kho của chúng ta được triển khai trên hai trung tâm dữ liệu riêng biệt, như được hiển thị trong Hình 11-8. Hỗ trợ phiên bản dịch vụ của chúng ta trong mỗi trung tâm dữ liệu là một cơ sở dữ liệu, và hai cơ sở dữ liệu này nói chuyện với nhau để cố gắng đồng bộ hóa dữ liệu giữa chúng. Các lượt đọc và ghi được thực hiện thông qua nút cơ sở dữ liệu cục bộ, và sao chép được sử dụng để đồng bộ hóa dữ liệu giữa các nút.
+
+![alt text](<images/Screenshot from 2025-09-29 13-23-16.png>)
+
+**Hình 11-8.** *Sử dụng sao chép đa chủ để chia sẻ dữ liệu giữa hai nút cơ sở dữ liệu*
+
+Bây giờ hãy nghĩ về những gì xảy ra khi có sự cố. Hãy tưởng tượng rằng một cái gì đó đơn giản như liên kết mạng giữa hai trung tâm dữ liệu ngừng hoạt động. Việc đồng bộ hóa tại thời điểm này thất bại. Các lượt ghi được thực hiện vào cơ sở dữ liệu chính trong DC1 sẽ không được truyền đến DC2, và ngược lại. Hầu hết các cơ sở dữ liệu hỗ trợ các thiết lập này cũng hỗ trợ một loại kỹ thuật xếp hàng nào đó để đảm bảo rằng chúng ta có thể phục hồi sau đó, nhưng điều gì sẽ xảy ra trong thời gian chờ đợi?
+
+##### **Hy sinh Tính nhất quán (Sacrificing Consistency)**
+
+Hãy giả sử rằng chúng ta không tắt hoàn toàn dịch vụ hàng tồn kho. Nếu tôi thực hiện một thay đổi đối với dữ liệu trong DC1, cơ sở dữ liệu trong DC2 không thấy nó. Điều này có nghĩa là bất kỳ yêu cầu nào được thực hiện đến nút hàng tồn kho của chúng ta trong DC2 đều thấy dữ liệu có khả năng đã cũ. Nói cách khác, hệ thống của chúng ta vẫn **sẵn có (available)** ở chỗ cả hai nút đều có thể phục vụ các yêu cầu, và chúng ta đã giữ cho hệ thống hoạt động mặc dù có **phân vùng (partition)**, nhưng chúng ta đã mất **tính nhất quán (consistency)**. Điều này thường được gọi là một hệ thống **AP**. Chúng ta không thể giữ cả ba.
+
+Trong quá trình phân vùng này, nếu chúng ta tiếp tục chấp nhận các lượt ghi thì chúng ta chấp nhận thực tế là tại một thời điểm nào đó trong tương lai, chúng phải được đồng bộ hóa lại. Càng có nhiều phân vùng, việc đồng bộ hóa lại này càng trở nên khó khăn hơn.
+
+Thực tế là ngay cả khi chúng ta không có một lỗi mạng giữa các nút cơ sở dữ liệu của mình, việc sao chép dữ liệu không phải là tức thời. Như đã đề cập trước đó, các hệ thống vui vẻ nhượng bộ tính nhất quán để giữ khả năng chịu lỗi phân vùng và tính sẵn có được cho là **nhất quán cuối cùng (eventually consistent)**; nghĩa là, chúng ta mong đợi rằng tại một thời điểm nào đó trong tương lai, tất cả các nút sẽ thấy dữ liệu được cập nhật, nhưng nó sẽ không xảy ra ngay lập tức vì vậy chúng ta phải sống với khả năng người dùng thấy dữ liệu cũ.
+
+##### **Hy sinh Tính sẵn có (Sacrificing Availability)**
+
+Điều gì sẽ xảy ra nếu chúng ta cần giữ tính nhất quán và muốn bỏ một cái gì đó khác thay vào đó? Chà, để giữ tính nhất quán, mỗi nút cơ sở dữ liệu cần biết bản sao dữ liệu mà nó có giống như nút cơ sở dữ liệu khác. Bây giờ trong phân vùng, nếu các nút cơ sở dữ liệu không thể nói chuyện với nhau, chúng không thể phối hợp để đảm bảo tính nhất quán. Chúng ta không thể đảm bảo tính nhất quán, vì vậy lựa chọn duy nhất của chúng ta là từ chối phản hồi yêu cầu. Nói cách khác, chúng ta đã hy sinh **tính sẵn có (availability)**. Hệ thống của chúng ta là **nhất quán (consistent)** và **chịu lỗi phân vùng (partition tolerant)**, hoặc **CP**. Trong chế độ này, dịch vụ của chúng ta sẽ phải tìm ra cách giảm cấp chức năng cho đến khi phân vùng được chữa lành và các nút cơ sở dữ liệu có thể được đồng bộ hóa lại.
+
+Tính nhất quán trên nhiều nút là thực sự khó. Có rất ít thứ (có lẽ không có gì) khó hơn trong các hệ thống phân tán. Hãy nghĩ về nó trong giây lát. Hãy tưởng tượng tôi muốn đọc một bản ghi từ nút cơ sở dữ liệu cục bộ. Làm thế nào để tôi biết nó đã được cập nhật? Tôi phải đi và hỏi nút kia. Nhưng tôi cũng phải yêu cầu nút cơ sở dữ liệu đó không cho phép nó được cập nhật trong khi việc đọc hoàn tất; nói cách khác, tôi cần phải khởi tạo một lượt đọc giao dịch trên nhiều nút cơ sở dữ liệu để đảm bảo tính nhất quán. Nhưng nói chung, mọi người không thực hiện các lượt đọc giao dịch, phải không? Bởi vì các lượt đọc giao dịch chậm. Chúng yêu cầu khóa. Một lượt đọc có thể chặn toàn bộ hệ thống. Tất cả các hệ thống nhất quán đều yêu cầu một mức độ khóa nào đó để thực hiện công việc của chúng.
+
+Như chúng ta đã thảo luận, các hệ thống phân tán phải mong đợi sự thất bại. Hãy xem xét lượt đọc giao dịch của chúng ta trên một tập hợp các nút nhất quán. Tôi yêu cầu một nút từ xa khóa một bản ghi nhất định trong khi việc đọc được khởi tạo. Tôi hoàn thành việc đọc, và yêu cầu nút từ xa giải phóng khóa của nó, nhưng bây giờ tôi không thể nói chuyện với nó. Điều gì sẽ xảy ra bây giờ? Các khóa thực sự khó để làm đúng ngay cả trong một hệ thống một tiến trình, và khó hơn đáng kể để triển khai tốt trong một hệ thống phân tán.
+
+Hãy nhớ khi chúng ta nói về các giao dịch phân tán trong **Chương 5**? Lý do cốt lõi chúng thách thức là vì vấn đề này với việc đảm bảo tính nhất quán trên nhiều nút.
+
+Việc làm đúng tính nhất quán đa nút khó đến mức tôi sẽ đề nghị mạnh mẽ, mạnh mẽ rằng nếu bạn cần nó, đừng cố gắng tự mình phát minh ra nó. Thay vào đó, hãy chọn một kho dữ liệu hoặc dịch vụ khóa cung cấp các đặc điểm này. Ví dụ, Consul, mà chúng ta sẽ thảo luận ngay sau đây, triển khai một kho lưu trữ khóa/giá trị nhất quán mạnh mẽ được thiết kế để chia sẻ cấu hình giữa nhiều nút. Cùng với "Bạn bè không để bạn bè viết mật mã của riêng họ" nên đi kèm "Bạn bè không để bạn bè viết kho dữ liệu nhất quán phân tán của riêng họ." Nếu bạn nghĩ rằng bạn cần viết kho dữ liệu CP của riêng mình, hãy đọc tất cả các bài báo về chủ đề này trước, sau đó lấy bằng tiến sĩ, và sau đó mong đợi dành vài năm để làm sai nó. Trong khi đó, tôi sẽ sử dụng một cái gì đó có sẵn làm điều đó cho tôi, hoặc có nhiều khả năng hơn là cố gắng hết sức để xây dựng các hệ thống AP nhất quán cuối cùng.
+
+##### **Hy sinh Khả năng chịu lỗi Phân vùng? (Sacrificing Partition Tolerance?)**
+
+Chúng ta được chọn hai, phải không? Vì vậy, chúng ta có hệ thống AP nhất quán cuối cùng của mình. Chúng ta có hệ thống CP nhất quán, nhưng khó xây dựng và mở rộng quy mô. Tại sao không có một hệ thống **CA**? Chà, làm thế nào chúng ta có thể hy sinh khả năng chịu lỗi phân vùng? Nếu hệ thống của chúng ta không có khả năng chịu lỗi phân vùng, nó không thể chạy trên mạng. Nói cách khác, nó cần phải là một tiến trình duy nhất hoạt động cục bộ. **Các hệ thống CA không tồn tại trong các hệ thống phân tán.**
+
+##### **AP hay CP?**
+
+Cái nào đúng, AP hay CP? Chà, thực tế là *nó phụ thuộc*. Với tư cách là những người xây dựng hệ thống, chúng ta biết sự đánh đổi tồn tại. Chúng ta biết rằng các hệ thống AP mở rộng quy mô dễ dàng hơn và đơn giản hơn để xây dựng, và chúng ta biết rằng một hệ thống CP sẽ đòi hỏi nhiều công việc hơn do những thách thức trong việc hỗ trợ tính nhất quán phân tán. Nhưng chúng ta có thể không hiểu tác động kinh doanh của sự đánh đổi này. Đối với hệ thống hàng tồn kho của chúng ta, nếu một bản ghi đã lỗi thời năm phút, điều đó có OK không? Nếu câu trả lời là có, một hệ thống AP có thể là câu trả lời. Nhưng còn số dư được giữ cho một khách hàng trong một ngân hàng thì sao? Liệu nó có thể lỗi thời không? Nếu không biết bối cảnh mà hoạt động đang được sử dụng, chúng ta không thể biết điều đúng đắn cần làm. Việc biết về định lý CAP chỉ giúp bạn hiểu rằng sự đánh đổi này tồn tại và những câu hỏi nào cần hỏi.
+
+##### **Không phải Tất cả hoặc Không có gì (It's Not All or Nothing)**
+
+Hệ thống của chúng ta nói chung không cần phải là AP hoặc CP. Danh mục của chúng ta có thể là AP, vì chúng ta không quá quan tâm đến một bản ghi cũ. Nhưng chúng ta có thể quyết định rằng dịch vụ hàng tồn kho của chúng ta cần phải là CP, vì chúng ta không muốn bán cho khách hàng một cái gì đó chúng ta không có và sau đó phải xin lỗi.
+
+Nhưng các dịch vụ riêng lẻ thậm chí không cần phải là CP hoặc AP.
+
+Hãy nghĩ về dịch vụ số dư điểm của chúng ta, nơi chúng ta lưu trữ các bản ghi về bao nhiêu điểm khách hàng thân thiết mà khách hàng của chúng ta đã tích lũy được. Chúng ta có thể quyết định rằng chúng ta không quan tâm nếu số dư chúng ta hiển thị cho một khách hàng đã cũ, nhưng khi nói đến việc cập nhật một số dư, chúng ta cần nó phải nhất quán để đảm bảo rằng khách hàng không sử dụng nhiều điểm hơn họ có. Microservice này là CP, hay AP, hay cả hai? Thực sự, những gì chúng ta đã làm là đẩy các sự đánh đổi xung quanh định lý CAP xuống các khả năng dịch vụ riêng lẻ.
+
+Một sự phức tạp khác là cả tính nhất quán và tính sẵn có đều không phải là tất cả hoặc không có gì. Nhiều hệ thống cho phép chúng ta một sự đánh đổi tinh tế hơn nhiều. Ví dụ, với Cassandra, tôi có thể thực hiện các sự đánh đổi khác nhau cho các cuộc gọi riêng lẻ. Vì vậy, nếu tôi cần tính nhất quán nghiêm ngặt, tôi có thể thực hiện một lượt đọc chặn cho đến khi tất cả các bản sao đã phản hồi xác nhận giá trị là nhất quán, hoặc cho đến khi một số lượng đại biểu cụ thể đã phản hồi, hoặc thậm chí chỉ một nút duy nhất. Rõ ràng, nếu tôi chặn chờ đợi tất cả các bản sao báo cáo lại và một trong số chúng không khả dụng, tôi sẽ bị chặn trong một thời gian dài. Nhưng nếu tôi hài lòng với chỉ một số lượng đại biểu đơn giản báo cáo lại, tôi có thể chấp nhận một số thiếu sót về tính nhất quán để ít bị tổn thương hơn trước một bản sao duy nhất không khả dụng.
+
+Bạn sẽ thường thấy các bài đăng về những người đánh bại định lý CAP. Họ không. Những gì họ đã làm là tạo ra một hệ thống nơi một số khả năng là CP, và một số là AP. Bằng chứng toán học đằng sau định lý CAP vẫn đúng. Mặc dù có nhiều nỗ lực ở trường, tôi đã học được rằng bạn không thể đánh bại toán học.
+
+##### **Và Thế giới Thực (And the Real World)**
+
+Phần lớn những gì chúng ta đã nói là về thế giới điện tử—các bit và byte được lưu trữ trong bộ nhớ. Chúng ta nói về tính nhất quán một cách gần như trẻ con; chúng ta tưởng tượng rằng trong phạm vi của hệ thống chúng ta đã tạo ra, chúng ta có thể dừng thế giới và làm cho mọi thứ có ý nghĩa. Tuy nhiên, rất nhiều những gì chúng ta xây dựng chỉ là một sự phản ánh của thế giới thực, và chúng ta không thể kiểm soát điều đó, phải không?
+
+Hãy xem lại hệ thống hàng tồn kho của chúng ta. Điều này ánh xạ đến các mặt hàng vật lý, trong thế giới thực. Chúng ta giữ một số đếm trong hệ thống của mình về bao nhiêu album chúng ta có. Vào đầu ngày, chúng ta có 100 bản sao của *Give Blood* của The Brakes. Chúng ta đã bán một bản. Bây giờ chúng ta có 99 bản. Dễ dàng, phải không? Nhưng điều gì sẽ xảy ra nếu khi đơn hàng đang được gửi đi, ai đó làm rơi một bản sao của album xuống sàn và nó bị dẫm lên và vỡ? Bây giờ thì sao? Hệ thống của chúng ta nói là 99, nhưng có 98 bản trên kệ.
+
+Điều gì sẽ xảy ra nếu chúng ta làm cho hệ thống hàng tồn kho của mình là AP thay vào đó, và thỉnh thoảng phải liên hệ với một người dùng sau đó và nói với anh ta rằng một trong những mặt hàng của anh ta thực sự đã hết hàng? Liệu đó có phải là điều tồi tệ nhất trên thế giới không? Chắc chắn sẽ dễ dàng hơn nhiều để xây dựng, mở rộng quy mô, và đảm bảo nó chính xác.
+
+Chúng ta phải nhận ra rằng bất kể hệ thống của chúng ta có thể nhất quán đến đâu trong và của chính chúng, chúng không thể biết mọi thứ xảy ra, đặc biệt là khi chúng ta đang lưu giữ hồ sơ về thế giới thực. Đây là một trong những lý do chính tại sao các hệ thống AP cuối cùng lại là lựa chọn đúng trong nhiều tình huống. Ngoài sự phức tạp của việc xây dựng các hệ thống CP, chúng không thể khắc phục tất cả các vấn đề của chúng ta.
+
+*(Phần cuối cùng của chương này sẽ thảo luận về "Service Discovery".)*
+
+Chắc chắn rồi! Chúng ta sẽ đi tiếp với phần cuối cùng của Chương 11, tập trung vào cách các dịch vụ tìm thấy nhau trong một môi trường động: "Khám phá Dịch vụ (Service Discovery)".
+
+---
+
+#### **Khám phá Dịch vụ (Service Discovery)**
+
+Một khi bạn có nhiều hơn một vài microservice nằm rải rác, sự chú ý của bạn chắc chắn sẽ chuyển sang việc biết mọi thứ đang ở đâu trên thế giới. Có lẽ bạn muốn biết những gì đang chạy trong một môi trường nhất định để bạn biết mình nên giám sát những gì. Có thể nó đơn giản như việc biết dịch vụ tài khoản của bạn ở đâu để những microservice sử dụng nó biết nơi để tìm nó. Hoặc có lẽ bạn chỉ muốn giúp các nhà phát triển trong tổ chức của mình dễ dàng biết được những API nào có sẵn để họ không phát minh lại bánh xe. Nói rộng ra, tất cả các trường hợp sử dụng này đều thuộc phạm vi của **khám phá dịch vụ (service discovery)**. Và như mọi khi với microservices, chúng ta có khá nhiều tùy chọn khác nhau để đối phó với nó.
+
+Tất cả các giải pháp chúng ta sẽ xem xét đều xử lý mọi thứ theo hai phần.
+1.  **Thứ nhất**, chúng cung cấp một cơ chế nào đó để một phiên bản **tự đăng ký (register itself)** và nói, "Tôi ở đây!"
+2.  **Thứ hai**, chúng cung cấp một cách để **tìm (find)** dịch vụ sau khi nó đã được đăng ký.
+
+Tuy nhiên, việc khám phá dịch vụ trở nên phức tạp hơn khi chúng ta đang xem xét một môi trường mà chúng ta liên tục phá hủy và triển khai các phiên bản dịch vụ mới. Lý tưởng nhất, chúng ta sẽ muốn bất kỳ giải pháp nào chúng ta chọn đều có thể đối phó với điều này.
+
+Hãy xem xét một số giải pháp phổ biến nhất để cung cấp dịch vụ và xem xét các tùy chọn của chúng ta.
+
+##### **DNS**
+
+Bắt đầu đơn giản là một điều tốt. **DNS** cho phép chúng ta liên kết một tên với địa chỉ IP của một hoặc nhiều máy. Ví dụ, chúng ta có thể quyết định rằng dịch vụ tài khoản của chúng ta luôn được tìm thấy tại `accounts.musiccorp.com`. Sau đó, chúng ta sẽ có điểm vào đó đến địa chỉ IP của máy chủ đang chạy dịch vụ đó, hoặc có lẽ để nó phân giải đến một bộ cân bằng tải đang phân phối tải trên một số phiên bản. Điều này có nghĩa là chúng ta sẽ phải xử lý việc cập nhật các mục này như một phần của việc triển khai dịch vụ của mình.
+
+Khi đối phó với các phiên bản của một dịch vụ trong các môi trường khác nhau, tôi đã thấy một mẫu miền dựa trên quy ước hoạt động tốt. Ví dụ, chúng ta có thể có một mẫu được định nghĩa là `<servicename>-<environment>.musiccorp.com`, cho chúng ta các mục như `accounts-uat.musiccorp.com` hoặc `accounts-dev.musiccorp.com`.
+
+Một cách nâng cao hơn để xử lý các môi trường khác nhau là có các máy chủ tên miền khác nhau cho các môi trường khác nhau. Vì vậy, tôi có thể giả định rằng `accounts.musiccorp.com` là nơi tôi luôn tìm thấy dịch vụ tài khoản, nhưng nó có thể phân giải đến các máy chủ khác nhau tùy thuộc vào nơi tôi thực hiện việc tra cứu. Nếu bạn đã có các môi trường của mình nằm trong các phân đoạn mạng khác nhau và thoải mái với việc quản lý các máy chủ và mục DNS của riêng mình, đây có thể là một giải pháp khá gọn gàng, nhưng đó là rất nhiều công việc nếu bạn không nhận được các lợi ích khác từ thiết lập này.
+
+DNS có một loạt các lợi thế, cái chính là nó là một tiêu chuẩn được hiểu rõ và được sử dụng rộng rãi đến mức hầu hết mọi `technology stack` sẽ hỗ trợ nó. Thật không may, trong khi có một số dịch vụ tồn tại để quản lý DNS bên trong một tổ chức, rất ít trong số chúng dường như được thiết kế cho một môi trường mà chúng ta đang đối phó với các máy chủ dùng một lần, làm cho việc cập nhật các mục DNS có phần đau đớn. Dịch vụ Route53 của Amazon làm một công việc khá tốt về điều này, nhưng tôi chưa thấy một tùy chọn tự lưu trữ nào tốt như vậy, mặc dù (như chúng ta sẽ thảo luận ngay sau đây) Consul có thể giúp chúng ta ở đây. Ngoài các vấn đề trong việc cập nhật các mục DNS, chính đặc tả DNS cũng có thể gây ra cho chúng ta một số vấn đề.
+
+Các mục DNS cho các tên miền có một **thời gian sống (time to live - TTL)**. Đây là khoảng thời gian một máy khách có thể coi mục đó là mới. Khi chúng ta muốn thay đổi máy chủ mà tên miền trỏ đến, chúng ta cập nhật mục đó, nhưng chúng ta phải giả định rằng các máy khách sẽ giữ lại IP cũ ít nhất là trong khoảng thời gian mà TTL quy định. Các mục DNS có thể được lưu vào bộ nhớ đệm ở nhiều nơi (ngay cả JVM cũng sẽ lưu vào bộ nhớ đệm các mục DNS trừ khi bạn yêu cầu nó không làm vậy), và càng có nhiều nơi chúng được lưu vào bộ nhớ đệm, mục đó càng có thể cũ.
+
+Một cách để giải quyết vấn đề này là để mục tên miền cho dịch vụ của bạn trỏ đến một bộ cân bằng tải, mà lần lượt trỏ đến các phiên bản của dịch vụ của bạn, như được hiển thị trong Hình 11-9. Khi bạn triển khai một phiên bản mới, bạn có thể lấy phiên bản cũ ra khỏi mục cân bằng tải và thêm cái mới vào. Một số người sử dụng **round-robin DNS**, nơi chính các mục DNS tham chiếu đến một nhóm các máy. Kỹ thuật này cực kỳ có vấn đề, vì máy khách bị ẩn khỏi máy chủ cơ bản, và do đó không thể dễ dàng ngừng định tuyến lưu lượng truy cập đến một trong các máy chủ nếu nó bị hỏng.
+
+![alt text](<images/Screenshot from 2025-09-29 13-23-24.png>)
+
+**Hình 11-9.** *Sử dụng DNS để phân giải đến một bộ cân bằng tải để tránh các mục DNS cũ*
+
+Như đã đề cập, DNS được hiểu rõ và được hỗ trợ rộng rãi. Nhưng nó có một hoặc hai nhược điểm. Tôi sẽ đề nghị điều tra xem liệu nó có phù hợp với bạn hay không trước khi chọn một cái gì đó phức tạp hơn. Đối với một tình huống mà bạn chỉ có các nút đơn, việc để DNS tham chiếu trực tiếp đến các máy chủ có lẽ là ổn. Nhưng đối với những tình huống mà bạn cần nhiều hơn một phiên bản của một máy chủ, hãy để các mục DNS phân giải đến các bộ cân bằng tải có thể xử lý việc đưa các máy chủ riêng lẻ vào và ra khỏi dịch vụ một cách phù hợp.
+
+##### **Sổ đăng ký Dịch vụ Động (Dynamic Service Registries)**
+
+Những nhược điểm của DNS như một cách tìm kiếm các nút trong một môi trường có tính động cao đã dẫn đến một số hệ thống thay thế, hầu hết trong số đó liên quan đến việc dịch vụ tự đăng ký với một sổ đăng ký trung tâm nào đó, mà lần lượt cung cấp khả năng tra cứu các dịch vụ này sau đó. Thường thì, các hệ thống này làm nhiều hơn là chỉ cung cấp đăng ký và khám phá dịch vụ, điều này có thể là một điều tốt hoặc không. Đây là một lĩnh vực đông đúc, vì vậy chúng ta sẽ chỉ xem xét một vài tùy chọn để cung cấp cho bạn cảm nhận về những gì có sẵn.
+
+##### **Zookeeper**
+
+**Zookeeper** ban đầu được phát triển như một phần của dự án Hadoop. Nó được sử dụng cho một loạt các trường hợp sử dụng gần như khó hiểu, bao gồm quản lý cấu hình, đồng bộ hóa dữ liệu giữa các dịch vụ, bầu cử lãnh đạo, hàng đợi thông điệp, và (hữu ích cho chúng ta) như một dịch vụ đặt tên.
+
+Giống như nhiều hệ thống tương tự, Zookeeper dựa vào việc chạy một số nút trong một cụm để cung cấp các đảm bảo khác nhau. Điều này có nghĩa là bạn nên mong đợi phải chạy ít nhất ba nút Zookeeper. Hầu hết sự thông minh trong Zookeeper xoay quanh việc đảm bảo rằng dữ liệu được sao chép một cách an toàn giữa các nút này, và mọi thứ vẫn nhất quán khi các nút bị lỗi.
+
+Về cốt lõi, Zookeeper cung cấp một không gian tên phân cấp để lưu trữ thông tin. Các máy khách có thể chèn các nút mới vào hệ thống phân cấp này, thay đổi chúng, hoặc truy vấn chúng. Hơn nữa, chúng có thể thêm các **quan sát (watches)** vào các nút để được thông báo khi chúng thay đổi. Điều này có nghĩa là chúng ta có thể lưu trữ thông tin về nơi các dịch vụ của chúng ta được đặt trong cấu trúc này, và với tư cách là một máy khách, được thông báo khi chúng thay đổi. Zookeeper thường được sử dụng như một kho cấu hình chung, vì vậy bạn cũng có thể lưu trữ cấu hình cụ thể cho dịch vụ trong đó, cho phép bạn thực hiện các tác vụ như thay đổi động các cấp độ nhật ký hoặc tắt các tính năng của một hệ thống đang chạy. Cá nhân tôi, tôi có xu hướng tránh việc sử dụng các hệ thống như Zookeeper như một nguồn cấu hình, vì tôi nghĩ nó có thể làm cho việc lý giải về hành vi của một dịch vụ nhất định trở nên khó khăn hơn.
+
+Bản thân Zookeeper khá chung chung về những gì nó cung cấp, đó là lý do tại sao nó được sử dụng cho rất nhiều trường hợp sử dụng. Bạn có thể nghĩ về nó chỉ như một cây thông tin được sao chép mà bạn có thể được cảnh báo khi nó thay đổi. Điều này có nghĩa là bạn thường sẽ xây dựng mọi thứ trên đó để phù hợp với trường hợp sử dụng cụ thể của mình. May mắn thay, các thư viện máy khách tồn tại cho hầu hết các ngôn ngữ.
+
+Trong kế hoạch lớn của mọi thứ, Zookeeper có thể được coi là cũ bây giờ, và không cung cấp cho chúng ta nhiều chức năng ngay từ đầu để giúp khám phá dịch vụ so với một số lựa chọn thay thế mới hơn. Điều đó nói rằng, nó chắc chắn đã được thử nghiệm và được sử dụng rộng rãi. Các thuật toán cơ bản mà Zookeeper triển khai khá khó để làm đúng. Ví dụ, tôi biết một nhà cung cấp cơ sở dữ liệu đã sử dụng Zookeeper chỉ để bầu cử lãnh đạo nhằm đảm bảo rằng một nút chính được thăng cấp đúng cách trong các điều kiện lỗi. Khách hàng cảm thấy rằng Zookeeper quá nặng nề và đã dành một thời gian dài để sửa lỗi trong triển khai của riêng họ của thuật toán PAXOS để thay thế những gì Zookeeper đã làm. Mọi người thường nói bạn không nên viết các thư viện mật mã của riêng mình. Tôi sẽ mở rộng điều đó bằng cách nói rằng bạn cũng không nên viết các hệ thống phối hợp phân tán của riêng mình. Có rất nhiều điều để nói cho việc sử dụng những thứ hiện có mà chỉ hoạt động.
+
+##### **Consul**
+
+Giống như Zookeeper, **Consul** hỗ trợ cả quản lý cấu hình và khám phá dịch vụ. Nhưng nó đi xa hơn Zookeeper trong việc cung cấp nhiều hỗ trợ hơn cho các trường hợp sử dụng chính này. Ví dụ, nó phơi bày một giao diện `HTTP` để khám phá dịch vụ, và một trong những tính năng sát thủ của Consul là nó thực sự cung cấp một máy chủ DNS ngay từ đầu; cụ thể, nó có thể phục vụ các bản ghi `SRV`, cung cấp cho bạn cả IP và cổng cho một tên nhất định. Điều này có nghĩa là nếu một phần của hệ thống của bạn đã sử dụng DNS và có thể hỗ trợ các bản ghi `SRV`, bạn có thể chỉ cần thả Consul vào và bắt đầu sử dụng nó mà không có bất kỳ thay đổi nào đối với hệ thống hiện tại của bạn.
+
+Consul cũng tích hợp các khả năng khác mà bạn có thể thấy hữu ích, chẳng hạn như khả năng thực hiện các kiểm tra sức khỏe trên các nút. Điều này có nghĩa là Consul rất có thể chồng chéo với các khả năng được cung cấp bởi các công cụ giám sát chuyên dụng khác, mặc dù bạn có nhiều khả năng sẽ sử dụng Consul như một nguồn thông tin này và sau đó kéo nó vào một bảng điều khiển hoặc hệ thống cảnh báo toàn diện hơn. Tuy nhiên, thiết kế có khả năng chịu lỗi cao của Consul và sự tập trung vào việc xử lý các hệ thống sử dụng nhiều các nút tạm thời làm tôi tự hỏi, liệu nó có thể thay thế các hệ thống như Nagios và Sensu cho một số trường hợp sử dụng hay không.
+
+Consul sử dụng một giao diện `HTTP RESTful` cho mọi thứ từ việc đăng ký một dịch vụ, truy vấn kho lưu trữ khóa/giá trị, hoặc chèn các kiểm tra sức khỏe. Điều này làm cho việc tích hợp với các `technology stack` khác nhau trở nên rất đơn giản. Một trong những điều khác tôi thực sự thích về Consul là đội ngũ đằng sau nó đã tách ra phần quản lý cụm cơ bản. **Serf**, mà Consul nằm trên đó, xử lý việc phát hiện các nút trong một cụm, quản lý lỗi, và cảnh báo. Consul sau đó thêm khám phá dịch vụ và quản lý cấu hình. Sự tách biệt các mối quan tâm này hấp dẫn tôi, điều này không có gì ngạc nhiên đối với bạn với các chủ đề xuyên suốt cuốn sách này!
+
+Consul rất mới, và với sự phức tạp của các thuật toán nó sử dụng, điều này thường sẽ khiến tôi do dự trong việc giới thiệu nó cho một công việc quan trọng như vậy. Điều đó nói rằng, Hashicorp, đội ngũ đằng sau nó, chắc chắn có một thành tích tuyệt vời trong việc tạo ra công nghệ mã nguồn mở rất hữu ích (dưới dạng cả Packer và Vagrant), dự án đang được phát triển tích cực, và tôi đã nói chuyện với một vài người đang vui vẻ sử dụng nó trong sản xuất. Với điều đó, tôi nghĩ nó rất đáng để xem xét.
+
+##### **Eureka**
+
+Hệ thống mã nguồn mở **Eureka** của Netflix đi ngược lại xu hướng của các hệ thống như Consul và Zookeeper ở chỗ nó không cố gắng trở thành một kho cấu hình đa năng. Nó thực sự rất có mục tiêu trong trường hợp sử dụng của nó.
+
+Eureka cũng cung cấp các khả năng cân bằng tải cơ bản ở chỗ nó có thể hỗ trợ tra cứu round-robin cơ bản của các phiên bản dịch vụ. Nó cung cấp một điểm cuối dựa trên REST để bạn có thể viết các máy khách của riêng mình, hoặc bạn có thể sử dụng máy khách Java của riêng nó. Máy khách Java cung cấp các khả năng bổ sung, chẳng hạn như kiểm tra sức khỏe của các phiên bản. Rõ ràng nếu bạn bỏ qua máy khách của Eureka và đi trực tiếp đến điểm cuối REST, bạn sẽ phải tự mình làm điều đó.
+
+Bằng cách để các máy khách xử lý việc khám phá dịch vụ trực tiếp, chúng ta tránh được nhu cầu về một tiến trình riêng biệt. Tuy nhiên, bạn yêu cầu mọi máy khách phải triển khai khám phá dịch vụ. Netflix, vốn đã tiêu chuẩn hóa trên JVM, đạt được điều này bằng cách để tất cả các máy khách sử dụng Eureka. Nếu bạn ở trong một môi trường đa ngôn ngữ hơn, điều này có thể là một thách thức lớn hơn.
+
+##### **Tự xây dựng (Rolling Your Own)**
+
+Một cách tiếp cận mà tôi đã tự mình sử dụng và thấy được thực hiện ở những nơi khác là tự xây dựng hệ thống của riêng bạn. Trên một dự án, chúng tôi đã sử dụng rất nhiều AWS, cung cấp khả năng thêm các **thẻ (tags)** vào các phiên bản. Khi khởi chạy các phiên bản dịch vụ, tôi sẽ áp dụng các thẻ để giúp định nghĩa phiên bản đó là gì và nó được sử dụng để làm gì. Điều này cho phép một số siêu dữ liệu phong phú được liên kết với một máy chủ nhất định, ví dụ:
+
+*   `service = accounts`
+*   `environment = production`
+*   `version = 154`
+
+Sau đó, tôi có thể sử dụng các API của AWS để truy vấn tất cả các phiên bản được liên kết với một tài khoản AWS nhất định để tìm các máy tôi quan tâm. Ở đây, chính AWS đang xử lý việc lưu trữ siêu dữ liệu được liên kết với mỗi phiên bản, và cung cấp cho chúng ta khả năng truy vấn nó. Sau đó, tôi đã xây dựng các công cụ dòng lệnh để tương tác với các phiên bản này, và việc tạo các bảng điều khiển để giám sát trạng thái trở nên khá dễ dàng, đặc biệt nếu bạn áp dụng ý tưởng để mỗi phiên bản dịch vụ phơi bày các chi tiết kiểm tra sức khỏe.
+
+Lần cuối cùng tôi làm điều này, chúng tôi đã không đi xa đến mức để các dịch vụ sử dụng các API của AWS để tìm các phụ thuộc dịch vụ của chúng, nhưng không có lý do gì bạn không thể. Rõ ràng, nếu bạn muốn các dịch vụ thượng nguồn được cảnh báo khi vị trí của một dịch vụ hạ nguồn thay đổi, bạn sẽ phải tự mình làm điều đó.
+
+##### **Đừng quên Con người! (Don't Forget the Humans!)**
+
+Các hệ thống chúng ta đã xem xét cho đến nay giúp một phiên bản dịch vụ dễ dàng tự đăng ký và tra cứu các dịch vụ khác mà nó cần nói chuyện. Nhưng với tư cách là con người, đôi khi chúng ta cũng muốn thông tin này. Bất kể bạn chọn hệ thống nào, hãy đảm bảo bạn có các công cụ có sẵn cho phép bạn xây dựng các báo cáo và bảng điều khiển trên các sổ đăng ký này để tạo ra các màn hình hiển thị cho con người, không chỉ cho máy tính.
+
+*(Phần tiếp theo và cuối cùng của chương này sẽ thảo luận về "Documenting Services" và "The Self-Describing System".)*
+
+Chắc chắn rồi! Chúng ta sẽ hoàn thành Chương 11 với hai phần cuối cùng, tập trung vào việc làm thế nào để hiểu và khám phá một hệ thống microservice đang hoạt động.
+
+---
+
+#### **Tài liệu hóa Dịch vụ (Documenting Services)**
+
+Bằng cách phân tách các hệ thống của chúng ta thành các microservice chi tiết hơn, chúng ta hy vọng sẽ phơi bày ra rất nhiều đường nối (`seams`) dưới dạng các API mà mọi người có thể sử dụng để làm nhiều điều tuyệt vời. Nếu bạn làm đúng việc khám phá của mình, chúng ta sẽ biết mọi thứ đang ở đâu. Nhưng làm thế nào để chúng ta biết những thứ đó làm gì, hoặc cách sử dụng chúng? Một tùy chọn rõ ràng là có tài liệu về các API. Tất nhiên, tài liệu thường có thể bị lỗi thời. Lý tưởng nhất, chúng ta muốn đảm bảo rằng tài liệu của chúng ta luôn được cập nhật với API microservice, và giúp dễ dàng xem tài liệu này khi chúng ta biết một điểm cuối dịch vụ ở đâu.
+
+##### **Swagger**
+
+**Swagger** cho phép bạn mô tả API của mình để tạo ra một giao diện người dùng web rất đẹp mắt, cho phép bạn xem tài liệu và tương tác với API thông qua một trình duyệt web. Khả năng thực thi các yêu cầu là rất tuyệt: ví dụ, bạn có thể định nghĩa các mẫu `POST`, làm rõ loại nội dung nào mà máy chủ mong đợi.
+
+Để làm tất cả những điều này, Swagger cần dịch vụ phơi bày một tệp phụ trợ (`sidecar file`) phù hợp với định dạng Swagger. Swagger có một số thư viện cho các ngôn ngữ khác nhau làm điều này cho bạn. Ví dụ, đối với Java, bạn có thể chú thích (`annotate`) các phương thức khớp với các cuộc gọi API của mình, và tệp sẽ được tạo cho bạn.
+
+Tôi thích trải nghiệm người dùng cuối mà Swagger mang lại, nhưng nó không làm được gì nhiều cho khái niệm khám phá gia tăng (`incremental exploration`) nằm ở trung tâm của `hypermedia`. Tuy nhiên, đó là một cách khá hay để phơi bày tài liệu về các dịch vụ của bạn.
+
+##### **HAL và Trình duyệt HAL (HAL and the HAL Browser)**
+
+Bản thân **Ngôn ngữ Ứng dụng Siêu văn bản (Hypertext Application Language - HAL)** là một tiêu chuẩn mô tả các tiêu chuẩn cho các điều khiển `hypermedia` mà chúng ta phơi bày. Như chúng ta đã đề cập trong **Chương 4**, các điều khiển `hypermedia` là phương tiện mà chúng ta cho phép các máy khách khám phá dần dần các API của chúng ta để sử dụng các khả năng của dịch vụ của chúng ta một cách ít ghép nối hơn so với các kỹ thuật tích hợp khác. Nếu bạn quyết định áp dụng tiêu chuẩn `hypermedia` của HAL, thì không chỉ bạn có thể sử dụng một số lượng lớn các thư viện máy khách để tiêu thụ API (tại thời điểm viết bài, wiki HAL đã liệt kê 50 thư viện hỗ trợ cho một số ngôn ngữ khác nhau), mà bạn còn có thể sử dụng **trình duyệt HAL (HAL browser)**, cung cấp cho bạn một cách để khám phá API thông qua một trình duyệt web.
+
+Giống như Swagger, giao diện người dùng này có thể được sử dụng không chỉ như một tài liệu sống (`living documentation`), mà còn để thực thi các cuộc gọi chống lại chính dịch vụ đó. Tuy nhiên, việc thực thi các cuộc gọi không được mượt mà bằng. Trong khi với Swagger, bạn có thể định nghĩa các mẫu để làm những việc như đưa ra một yêu cầu `POST`, với HAL bạn phải tự mình làm nhiều hơn. Mặt trái của điều này là sức mạnh cố hữu của các điều khiển `hypermedia` cho phép bạn khám phá API được phơi bày bởi dịch vụ một cách hiệu quả hơn nhiều, vì bạn có thể theo các liên kết xung quanh rất dễ dàng. Hóa ra các trình duyệt web khá giỏi trong việc đó!
+
+Không giống như với Swagger, tất cả thông tin cần thiết để điều khiển tài liệu và `sandbox` này được nhúng vào các điều khiển `hypermedia`. Đây là một con dao hai lưỡi. Nếu bạn đã sử dụng các điều khiển `hypermedia`, việc phơi bày một trình duyệt HAL và để các máy khách khám phá API của bạn không tốn nhiều công sức. Tuy nhiên, nếu bạn không sử dụng `hypermedia`, bạn hoặc là không thể sử dụng HAL hoặc phải trang bị lại API của mình để sử dụng `hypermedia`, điều này có khả năng là một bài tập phá vỡ các người tiêu dùng hiện có.
+
+Thực tế là HAL cũng mô tả một tiêu chuẩn `hypermedia` với một số thư viện máy khách hỗ trợ là một phần thưởng bổ sung, và tôi nghi ngờ đó là một lý do lớn tại sao tôi đã thấy HAL được chấp nhận nhiều hơn như một cách để tài liệu hóa các API so với Swagger đối với những người đã sử dụng các điều khiển `hypermedia`. Nếu bạn đang sử dụng `hypermedia`, khuyến nghị của tôi là sử dụng HAL thay vì Swagger. Nhưng nếu bạn đang sử dụng `hypermedia` và không thể biện minh cho việc chuyển đổi, tôi chắc chắn sẽ đề nghị thử Swagger.
+
+#### **Hệ thống Tự mô tả (The Self-Describing System)**
+
+Trong quá trình phát triển ban đầu của SOA, các tiêu chuẩn như **Mô tả, Khám phá và Tích hợp Toàn cầu (Universal Description, Discovery, and Integration - UDDI)** đã nổi lên để giúp mọi người hiểu được những dịch vụ nào đang chạy. Các cách tiếp cận này khá nặng nề, điều này đã dẫn đến các kỹ thuật thay thế để cố gắng hiểu các hệ thống của chúng ta. Martin Fowler đã thảo luận về khái niệm **sổ đăng ký nhân văn (humane registry)**, nơi một cách tiếp cận nhẹ hơn nhiều chỉ đơn giản là có một nơi mà con người có thể ghi lại thông tin về các dịch vụ trong tổ chức trong một cái gì đó cơ bản như một wiki.
+
+Việc có được một bức tranh về hệ thống của chúng ta và cách nó đang hoạt động là quan trọng, đặc biệt là khi chúng ta ở quy mô lớn. Chúng ta đã đề cập đến một số kỹ thuật khác nhau sẽ giúp chúng ta có được sự hiểu biết trực tiếp từ hệ thống của mình. Bằng cách theo dõi sức khỏe của các dịch vụ hạ nguồn của chúng ta cùng với các ID tương quan để giúp chúng ta xem các chuỗi cuộc gọi, chúng ta có thể nhận được dữ liệu thực về cách các dịch vụ của chúng ta tương tác với nhau. Sử dụng các hệ thống khám phá dịch vụ như Consul, chúng ta có thể thấy các microservice của mình đang chạy ở đâu. HAL cho chúng ta thấy những khả năng nào đang được lưu trữ trên bất kỳ điểm cuối nào, trong khi các trang kiểm tra sức khỏe và các hệ thống giám sát của chúng ta cho chúng ta biết sức khỏe của cả hệ thống tổng thể và các dịch vụ riêng lẻ.
+
+Tất cả thông tin này đều có sẵn một cách có lập trình. Tất cả dữ liệu này cho phép chúng ta làm cho sổ đăng ký nhân văn của mình mạnh mẽ hơn một trang wiki đơn giản chắc chắn sẽ bị lỗi thời. Thay vào đó, chúng ta nên sử dụng nó để khai thác và hiển thị tất cả thông tin mà hệ thống của chúng ta sẽ phát ra. Bằng cách tạo các bảng điều khiển tùy chỉnh, chúng ta có thể tập hợp lại một lượng lớn thông tin có sẵn để giúp chúng ta hiểu được hệ sinh thái của mình.
+
+Bằng mọi cách, hãy bắt đầu với một cái gì đó đơn giản như một trang web tĩnh hoặc wiki có lẽ lấy một chút dữ liệu từ hệ thống trực tiếp. Nhưng hãy tìm cách kéo thêm ngày càng nhiều thông tin theo thời gian. Việc làm cho thông tin này có sẵn một cách dễ dàng là một công cụ quan trọng để quản lý sự phức tạp nổi lên sẽ đến từ việc chạy các hệ thống này ở quy mô lớn.
+
+#### **Tóm tắt (Summary)**
+
+Với tư cách là một phương pháp thiết kế, microservices vẫn còn khá non trẻ, vì vậy mặc dù chúng ta có một số kinh nghiệm đáng chú ý để rút ra, tôi chắc chắn rằng vài năm tới sẽ mang lại nhiều mẫu hình hữu ích hơn trong việc xử lý chúng ở quy mô lớn. Tuy nhiên, tôi hy vọng chương này đã phác thảo một số bước bạn có thể thực hiện trên hành trình của mình đến với microservices ở quy mô lớn sẽ giúp bạn vững bước.
+
+Ngoài những gì tôi đã đề cập ở đây, tôi khuyên bạn nên đọc cuốn sách xuất sắc của Michael Nygard, *Release It!*. Trong đó, ông chia sẻ một bộ sưu tập các câu chuyện về sự cố hệ thống và một số mẫu hình để giúp đối phó tốt với nó. Cuốn sách rất đáng đọc (thực tế, tôi sẽ đi xa đến mức nói rằng nó nên được coi là tài liệu cần đọc thiết yếu cho bất kỳ ai xây dựng các hệ thống ở quy mô lớn).
+
+Chúng ta đã đi qua khá nhiều lĩnh vực, và chúng ta đang đến gần cuối. Trong chương tiếp theo và cuối cùng của chúng ta, chúng ta sẽ xem xét việc kéo mọi thứ lại với nhau và tóm tắt những gì chúng ta đã học được trong toàn bộ cuốn sách.
+
+*(Kết thúc Chương 11. Chúng ta sẽ tiếp tục với Chương 12: "Bringing It All Together".)*
+
+Tuyệt vời! Chúng ta đã đi đến chương cuối cùng, Chương 12: "Tổng kết lại Tất cả (Bringing It All Together)". Chương này sẽ tóm tắt lại các nguyên tắc cốt lõi và bài học quan trọng nhất từ toàn bộ cuốn sách.
+
+---
+
+### **12. Tổng kết lại Tất cả (Bringing It All Together)**
+
+Chúng ta đã đề cập đến một lượng kiến thức đáng kể trong các chương trước, từ việc microservices là gì đến cách định nghĩa ranh giới của chúng, và từ công nghệ tích hợp đến các mối quan tâm về bảo mật và giám sát. Và chúng ta thậm chí còn tìm thấy thời gian để tìm ra vai trò của kiến trúc sư phù hợp như thế nào. Có rất nhiều điều cần tiếp thu, vì mặc dù bản thân các microservice có thể nhỏ, nhưng bề rộng và tác động của kiến trúc của chúng thì không. Vì vậy, ở đây tôi sẽ cố gắng tóm tắt một số điểm chính đã được đề cập trong suốt cuốn sách.
+
+#### **Các Nguyên tắc của Microservices (Principles of Microservices)**
+
+Chúng ta đã thảo luận về vai trò mà các **nguyên tắc (principles)** có thể đóng trong **Chương 2**. Chúng là những tuyên bố về cách mọi thứ nên được thực hiện, và tại sao chúng ta nghĩ rằng chúng nên được thực hiện theo cách đó. Chúng giúp chúng ta định hình các quyết định khác nhau mà chúng ta phải đưa ra khi xây dựng hệ thống của mình. Bạn hoàn toàn nên định nghĩa các nguyên tắc của riêng mình, nhưng tôi nghĩ rằng đáng để nêu ra những gì tôi thấy là các nguyên tắc chính cho các kiến trúc microservice, mà bạn có thể thấy được tóm tắt trong Hình 12-1. Đây là những nguyên tắc sẽ giúp chúng ta tạo ra các dịch vụ tự chủ nhỏ hoạt động tốt cùng nhau. Chúng ta đã đề cập đến mọi thứ ở đây ít nhất một lần rồi, vì vậy không có gì nên là mới, nhưng có giá trị trong việc chắt lọc nó xuống cốt lõi của nó.
+
+Bạn có thể chọn áp dụng các nguyên tắc này một cách toàn bộ, hoặc có lẽ điều chỉnh chúng để có ý nghĩa trong tổ chức của riêng bạn. Nhưng hãy lưu ý giá trị đến từ việc sử dụng chúng kết hợp: **tổng thể nên lớn hơn tổng các bộ phận của nó**. Vì vậy, nếu bạn quyết định bỏ một trong số chúng, hãy chắc chắn rằng bạn hiểu mình sẽ bỏ lỡ những gì.
+
+Đối với mỗi nguyên tắc này, tôi đã cố gắng rút ra một số **thực tiễn (practices)** hỗ trợ mà chúng ta đã đề cập trong cuốn sách. Như câu nói, có nhiều hơn một cách để lột da một con mèo: bạn có thể tìm thấy các thực tiễn của riêng mình để thực hiện các nguyên tắc này, nhưng điều này sẽ giúp bạn bắt đầu.
+
+![alt text](<images/Screenshot from 2025-09-29 13-23-33.png>)
+
+**Hình 12-1.** *Các nguyên tắc của microservices*
+
+##### **Mô hình hóa xung quanh các Khái niệm Nghiệp vụ (Model Around Business Concepts)**
+
+Kinh nghiệm đã cho chúng ta thấy rằng các giao diện được cấu trúc xung quanh các **bounded context** hướng nghiệp vụ ổn định hơn so với những giao diện được cấu trúc xung quanh các khái niệm kỹ thuật. Bằng cách mô hình hóa miền nghiệp vụ mà hệ thống của chúng ta hoạt động, chúng ta không chỉ cố gắng hình thành các giao diện ổn định hơn, mà chúng ta còn đảm bảo rằng chúng ta có thể phản ánh các thay đổi trong các quy trình nghiệp vụ một cách dễ dàng hơn. Sử dụng các `bounded context` để định nghĩa các ranh giới miền nghiệp vụ tiềm năng.
+
+##### **Áp dụng Văn hóa Tự động hóa (Adopt a Culture of Automation)**
+
+Microservices thêm rất nhiều sự phức tạp, một phần quan trọng trong đó đến từ số lượng lớn các bộ phận chuyển động mà chúng ta phải đối phó. Việc chấp nhận một văn hóa **tự động hóa** là một cách quan trọng để giải quyết vấn đề này, và việc dồn nỗ lực ban đầu để tạo ra các công cụ hỗ trợ microservices có thể rất có ý nghĩa. **Kiểm thử tự động** là điều cần thiết, vì việc đảm bảo các dịch vụ của chúng ta vẫn hoạt động là một quy trình phức tạp hơn so với các hệ thống `monolithic`. Việc có một lệnh dòng lệnh thống nhất để **triển khai theo cùng một cách ở mọi nơi** có thể giúp ích, và đây có thể là một phần quan trọng của việc áp dụng **phân phối liên tục (continuous delivery)** để cung cấp cho chúng ta phản hồi nhanh về chất lượng sản xuất của mỗi lần `check-in`.
+
+Hãy xem xét việc sử dụng các **định nghĩa môi trường (environment definitions)** để giúp bạn chỉ định sự khác biệt từ môi trường này sang môi trường khác, mà không hy sinh khả năng sử dụng một phương pháp triển khai thống nhất. Hãy nghĩ đến việc tạo ra các **hình ảnh tùy chỉnh (custom images)** để tăng tốc độ triển khai, và chấp nhận việc tạo ra các **máy chủ bất biến (immutable servers)** hoàn toàn tự động để giúp việc lý giải về các hệ thống của bạn trở nên dễ dàng hơn.
+
+##### **Ẩn chi tiết Triển khai Nội bộ (Hide Internal Implementation Details)**
+
+Để tối đa hóa khả năng một dịch vụ phát triển độc lập với bất kỳ dịch vụ nào khác, điều quan trọng là chúng ta phải **ẩn chi tiết triển khai**. Việc mô hình hóa các `bounded context` có thể giúp ích, vì điều này giúp chúng ta tập trung vào những mô hình nào nên được chia sẻ, và những mô hình nào nên được ẩn. Các dịch vụ cũng nên **ẩn cơ sở dữ liệu của chúng** để tránh rơi vào một trong những loại ghép nối phổ biến nhất có thể xuất hiện trong các kiến trúc hướng dịch vụ truyền thống, và sử dụng các **bơm dữ liệu (data pumps)** hoặc **bơm dữ liệu sự kiện (event data pumps)** để hợp nhất dữ liệu trên nhiều dịch vụ cho các mục đích báo cáo.
+
+Khi có thể, hãy chọn các **API không phụ thuộc vào công nghệ (technology-agnostic APIs)** để cung cấp cho bạn sự tự do sử dụng các `technology stack` khác nhau. Hãy xem xét sử dụng `REST`, vốn chính thức hóa sự tách biệt giữa các chi tiết triển khai nội bộ và bên ngoài, mặc dù ngay cả khi sử dụng các lệnh gọi thủ tục từ xa (`RPC`), bạn vẫn có thể chấp nhận những ý tưởng này.
+
+##### **Phi tập trung hóa Mọi thứ (Decentralize All the Things)**
+
+Để tối đa hóa quyền tự chủ mà microservices có thể mang lại, chúng ta cần phải liên tục tìm kiếm cơ hội để **ủy quyền việc ra quyết định và kiểm soát** cho các đội sở hữu chính các dịch vụ đó. Quá trình này bắt đầu bằng việc chấp nhận **tự phục vụ (self-service)** ở bất cứ đâu có thể, cho phép mọi người triển khai phần mềm theo yêu cầu, làm cho việc phát triển và kiểm thử dễ dàng nhất có thể, và tránh nhu cầu về các đội riêng biệt để thực hiện các hoạt động này.
+
+Việc đảm bảo rằng các **đội sở hữu dịch vụ của họ** là một bước quan trọng trên hành trình này, làm cho các đội chịu trách nhiệm về những thay đổi được thực hiện, lý tưởng nhất là ngay cả việc để họ quyết định khi nào phát hành những thay đổi đó. Việc sử dụng **mã nguồn mở nội bộ** đảm bảo rằng mọi người có thể thực hiện các thay đổi trên các dịch vụ do các đội khác sở hữu, mặc dù hãy nhớ rằng điều này đòi hỏi công việc để triển khai. **Điều chỉnh các đội theo tổ chức** để đảm bảo rằng luật Conway hoạt động cho bạn, và giúp đội của bạn trở thành các chuyên gia miền nghiệp vụ trong các dịch vụ tập trung vào nghiệp vụ mà họ đang tạo ra. Khi cần một số hướng dẫn bao quát, hãy cố gắng chấp nhận một **mô hình quản trị chung (shared governance model)** nơi mọi người từ mỗi đội cùng nhau chia sẻ trách nhiệm phát triển tầm nhìn kỹ thuật của hệ thống.
+
+Nguyên tắc này cũng có thể áp dụng cho kiến trúc. Tránh các cách tiếp cận như bus dịch vụ doanh nghiệp hoặc các hệ thống điều phối, có thể dẫn đến việc tập trung hóa logic nghiệp vụ và các dịch vụ câm. Thay vào đó, hãy ưu tiên **vũ đạo hơn điều phối** và `middleware` câm, với các điểm cuối thông minh để đảm bảo rằng bạn giữ logic và dữ liệu liên quan trong các ranh giới dịch vụ, giúp giữ mọi thứ gắn kết.
+
+##### **Có thể Triển khai Độc lập (Independently Deployable)**
+
+Chúng ta nên luôn phấn đấu để đảm bảo rằng các microservice của chúng ta có thể và được triển khai một mình. Ngay cả khi các thay đổi gây đổ vỡ là cần thiết, chúng ta nên tìm cách **cùng tồn tại các điểm cuối có phiên bản** để cho phép người tiêu dùng của chúng ta thay đổi theo thời gian. Điều này cho phép chúng ta tối ưu hóa tốc độ phát hành các tính năng mới, cũng như tăng quyền tự chủ của các đội sở hữu các microservice này bằng cách đảm bảo rằng họ không phải liên tục điều phối các lần triển khai của mình. Khi sử dụng tích hợp dựa trên RPC, hãy tránh việc tạo ra các `stub` máy khách/máy chủ bị ràng buộc chặt chẽ như được thúc đẩy bởi Java RMI.
+
+Bằng cách áp dụng mô hình **một dịch vụ trên mỗi máy chủ**, bạn giảm được các tác dụng phụ có thể gây ra việc triển khai một dịch vụ ảnh hưởng đến một dịch vụ không liên quan khác. Hãy xem xét sử dụng các kỹ thuật **blue/green** hoặc **canary release** để tách biệt việc triển khai khỏi phát hành, giảm rủi ro của một bản phát hành bị lỗi. Sử dụng các **hợp đồng do người tiêu dùng điều khiển** để bắt các thay đổi gây đổ vỡ trước khi chúng xảy ra.
+
+Hãy nhớ rằng việc bạn có thể thực hiện một thay đổi cho một dịch vụ duy nhất và phát hành nó vào sản xuất, mà không cần phải triển khai bất kỳ dịch vụ nào khác đồng bộ, nên là tiêu chuẩn, không phải là ngoại lệ. Người tiêu dùng của bạn nên quyết định khi nào họ tự cập nhật, và bạn cần phải đáp ứng điều này.
+
+##### **Cô lập Thất bại (Isolate Failure)**
+
+Một kiến trúc microservice có thể có khả năng phục hồi hơn một hệ thống `monolithic`, nhưng chỉ khi chúng ta hiểu và lên kế hoạch cho các lỗi trong một phần của hệ thống của mình. Nếu chúng ta không tính đến thực tế là một cuộc gọi hạ nguồn có thể và sẽ thất bại, hệ thống của chúng ta có thể phải chịu **lỗi xếp tầng thảm khốc**, và chúng ta có thể thấy mình với một hệ thống mong manh hơn nhiều so với trước đây.
+
+Khi sử dụng các cuộc gọi mạng, **đừng coi các cuộc gọi từ xa như các cuộc gọi cục bộ**, vì điều này sẽ che giấu các loại chế độ lỗi khác nhau. Vì vậy, hãy đảm bảo nếu bạn đang sử dụng các thư viện máy khách rằng sự trừu tượng hóa của cuộc gọi từ xa không đi quá xa.
+
+Nếu chúng ta giữ vững các nguyên lý của **tính chống mong manh (antifragility)**, và mong đợi thất bại sẽ xảy ra ở bất cứ đâu và mọi nơi, chúng ta đang đi đúng hướng. Hãy chắc chắn rằng các **thời gian chờ (timeouts)** của bạn được đặt phù hợp. Hiểu khi nào và làm thế nào để sử dụng các **vách ngăn (bulkheads)** và **bộ ngắt mạch (circuit breakers)** để hạn chế hậu quả của một thành phần bị lỗi. Hiểu tác động đối với khách hàng sẽ là gì nếu chỉ một phần của hệ thống hoạt động sai. Biết những tác động của một **phân vùng mạng (network partition)** có thể là gì, và liệu việc hy sinh **tính sẵn có (availability)** hay **tính nhất quán (consistency)** trong một tình huống nhất định là lựa chọn đúng đắn.
+
+##### **Có khả năng Quan sát cao (Highly Observable)**
+
+Chúng ta không thể dựa vào việc quan sát hành vi của một phiên bản dịch vụ duy nhất hoặc trạng thái của một máy duy nhất để xem liệu hệ thống có hoạt động chính xác hay không. Thay vào đó, chúng ta cần một cái nhìn tổng hợp về những gì đang xảy ra. Sử dụng **giám sát ngữ nghĩa** để xem liệu hệ thống của bạn có hoạt động chính xác hay không, bằng cách tiêm các giao dịch tổng hợp vào hệ thống của bạn để mô phỏng hành vi của người dùng thực. **Tổng hợp nhật ký của bạn**, và **tổng hợp các chỉ số của bạn**, để khi bạn thấy một vấn đề, bạn có thể đi sâu vào nguồn gốc. Và khi nói đến việc tái tạo các vấn đề khó chịu hoặc chỉ xem hệ thống của bạn đang tương tác như thế nào trong sản xuất, hãy sử dụng các **ID tương quan (correlation IDs)** để cho phép bạn theo dõi các cuộc gọi qua hệ thống.
+
+---
+#### **Khi nào bạn không nên sử dụng Microservices? (When Shouldn’t You Use Microservices?)**
+
+Tôi được hỏi câu hỏi này rất nhiều. Lời khuyên đầu tiên của tôi sẽ là bạn càng ít hiểu về một miền nghiệp vụ, bạn càng khó tìm ra các `bounded context` phù hợp cho các dịch vụ của mình. Như chúng ta đã thảo luận trước đây, việc xác định sai ranh giới dịch vụ có thể dẫn đến việc phải thực hiện rất nhiều thay đổi trong sự hợp tác từ dịch vụ đến dịch vụ—một hoạt động tốn kém. Vì vậy, nếu bạn đang tiếp cận một hệ thống `monolithic` mà bạn không hiểu miền nghiệp vụ của nó, hãy dành thời gian tìm hiểu hệ thống đó làm gì trước, và sau đó tìm cách xác định các ranh giới `module` sạch sẽ trước khi chia nhỏ các dịch vụ.
+
+Phát triển **greenfield** (từ đầu) cũng khá thách thức. Không chỉ là miền nghiệp vụ có khả năng còn mới; mà còn dễ dàng hơn nhiều để chia nhỏ một cái gì đó bạn *đã có* hơn là một cái gì đó bạn *chưa có*! Vì vậy, một lần nữa, hãy xem xét bắt đầu với `monolithic` trước và chia nhỏ mọi thứ khi bạn đã ổn định.
+
+Nhiều thách thức bạn sẽ phải đối mặt với microservices trở nên tồi tệ hơn theo quy mô. Nếu bạn chủ yếu làm mọi thứ một cách thủ công, bạn có thể ổn với 1 hoặc 2 dịch vụ, nhưng 5 hoặc 10 thì sao? Việc gắn bó với các thực hành giám sát cũ, nơi bạn chỉ xem xét các chỉ số như CPU và bộ nhớ, có thể hoạt động OK cho một vài dịch vụ, nhưng càng có nhiều sự hợp tác từ dịch vụ đến dịch vụ, điều này sẽ càng trở nên đau đớn hơn. Bạn sẽ thấy mình vấp phải những điểm đau này khi bạn thêm nhiều dịch vụ hơn, và tôi hy vọng lời khuyên trong cuốn sách này sẽ giúp bạn thấy một số vấn đề này đang đến, và cung cấp cho bạn một số mẹo cụ thể về cách đối phó với chúng. Tôi đã nói trước đây về việc REA và Gilt đã mất một thời gian để xây dựng các công cụ và thực hành để quản lý microservices tốt, trước khi có thể sử dụng chúng với số lượng lớn. Những câu chuyện này chỉ củng cố cho tôi tầm quan trọng của việc bắt đầu dần dần để bạn hiểu được khẩu vị và khả năng thay đổi của tổ chức mình, điều này sẽ giúp bạn áp dụng microservices một cách đúng đắn.
+
+#### **Lời kết (Parting Words)**
+
+Các kiến trúc microservice cung cấp cho bạn nhiều lựa chọn hơn, và nhiều quyết định hơn để đưa ra. Việc đưa ra quyết định trong thế giới này là một hoạt động phổ biến hơn nhiều so với trong các hệ thống `monolithic`, đơn giản hơn. Bạn sẽ không làm đúng tất cả những quyết định này, tôi có thể đảm bảo điều đó. Vì vậy, biết rằng chúng ta sẽ làm sai một số điều, các lựa chọn của chúng ta là gì? Chà, tôi sẽ đề nghị tìm cách làm cho mỗi quyết định nhỏ về phạm vi; bằng cách đó, nếu bạn làm sai, bạn chỉ ảnh hưởng đến một phần nhỏ của hệ thống của mình. Hãy học cách chấp nhận khái niệm về **kiến trúc tiến hóa (evolutionary architecture)**, nơi hệ thống của bạn uốn cong, linh hoạt và thay đổi theo thời gian khi bạn học được những điều mới. Đừng nghĩ đến việc viết lại toàn bộ, mà thay vào đó là một loạt các thay đổi được thực hiện đối với hệ thống của bạn theo thời gian để giữ cho nó mềm dẻo.
+
+Hy vọng đến bây giờ tôi đã chia sẻ với bạn đủ thông tin và kinh nghiệm để giúp bạn quyết định xem microservices có dành cho bạn hay không. Nếu có, tôi hy vọng bạn nghĩ về điều này như một **hành trình (journey)**, không phải là một **đích đến (destination)**. Hãy đi từng bước. Chia nhỏ hệ thống của bạn từng mảnh một, học hỏi khi bạn đi. Và hãy quen với nó: theo nhiều cách, kỷ luật để liên tục thay đổi và phát triển hệ thống của chúng ta là một bài học quan trọng hơn nhiều để học hỏi so với bất kỳ điều gì khác tôi đã chia sẻ với bạn trong cuốn sách này. **Thay đổi là không thể tránh khỏi. Hãy chấp nhận nó.**
