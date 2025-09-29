@@ -1519,3 +1519,483 @@ Vậy bây giờ chúng ta có thể chia nhỏ các dịch vụ của mình, nh
 
 *(Kết thúc Chương 5. Chương tiếp theo, Chương 6, sẽ tập trung vào "Triển khai".)*
 
+Tuyệt vời! Chúng ta sẽ bắt đầu Chương 6: "Triển khai (Deployment)". Chương này sẽ khám phá các kỹ thuật và công nghệ để triển khai microservices một cách hiệu quả.
+
+---
+
+### **6. Triển khai (Deployment)**
+
+Triển khai một ứng dụng `monolithic` là một quy trình khá đơn giản. Microservices, với sự phụ thuộc lẫn nhau, lại là một ấm cá hoàn toàn khác. Nếu bạn không tiếp cận việc triển khai đúng cách, đó là một trong những lĩnh vực mà sự phức tạp có thể biến cuộc sống của bạn thành một cơn ác mộng. Trong chương này, chúng ta sẽ xem xét một số kỹ thuật và công nghệ có thể giúp chúng ta khi triển khai microservices vào các kiến trúc chi tiết.
+
+Tuy nhiên, chúng ta sẽ bắt đầu bằng cách xem xét **tích hợp liên tục (continuous integration)** và **phân phối liên tục (continuous delivery)**. Những khái niệm liên quan nhưng khác biệt này sẽ giúp định hình các quyết định khác mà chúng ta sẽ đưa ra khi suy nghĩ về những gì cần xây dựng, cách xây dựng nó, và cách triển khai nó.
+
+#### **Giới thiệu Sơ lược về Tích hợp Liên tục (A Brief Introduction to Continuous Integration)**
+
+**Tích hợp liên tục (Continuous Integration - CI)** đã tồn tại được một số năm. Tuy nhiên, đáng để dành một chút thời gian để xem lại những điều cơ bản, đặc biệt là khi chúng ta nghĩ về sự ánh xạ giữa microservices, các bản dựng, và các kho lưu trữ kiểm soát phiên bản, có một số tùy chọn khác nhau cần xem xét.
+
+Với CI, mục tiêu cốt lõi là giữ cho mọi người đồng bộ với nhau, điều mà chúng ta đạt được bằng cách đảm bảo rằng mã mới được `check-in` tích hợp đúng cách với mã hiện có. Để làm điều này, một máy chủ CI phát hiện rằng mã đã được `commit`, `check-out` nó, và thực hiện một số xác minh như đảm bảo mã biên dịch được và các bài kiểm thử vượt qua.
+
+Là một phần của quá trình này, chúng ta thường tạo ra các **tạo tác (artifact(s))** được sử dụng để xác thực thêm, chẳng hạn như triển khai một dịch vụ đang chạy để chạy các bài kiểm thử chống lại nó. Lý tưởng nhất, chúng ta muốn xây dựng các tạo tác này một lần và chỉ một lần, và sử dụng chúng cho tất cả các lần triển khai của phiên bản mã đó. Điều này là để tránh làm cùng một việc lặp đi lặp lại, và để chúng ta có thể xác nhận rằng tạo tác chúng ta đã triển khai là cái chúng ta đã kiểm thử. Để cho phép các tạo tác này được tái sử dụng, chúng ta đặt chúng vào một loại kho lưu trữ nào đó, được cung cấp bởi chính công cụ CI hoặc trên một hệ thống riêng biệt.
+
+Chúng ta sẽ xem xét các loại tạo tác nào chúng ta có thể sử dụng cho microservices ngay sau đây, và chúng ta sẽ xem xét sâu hơn về việc kiểm thử trong **Chương 7**.
+
+CI có một số lợi ích. Chúng ta nhận được một mức độ phản hồi nhanh về chất lượng mã của mình. Nó cho phép chúng ta tự động hóa việc tạo ra các tạo tác nhị phân của mình. Tất cả mã cần thiết để xây dựng tạo tác đều được kiểm soát phiên bản, vì vậy chúng ta có thể tạo lại tạo tác nếu cần. Chúng ta cũng có được một mức độ truy xuất nguồn gốc từ một tạo tác đã triển khai trở lại mã nguồn, và tùy thuộc vào khả năng của chính công cụ CI, có thể xem các bài kiểm thử nào đã được chạy trên mã và tạo tác đó. Chính vì những lý do này mà CI đã rất thành công.
+
+##### **Bạn có thực sự đang làm điều đó không? (Are You Really Doing It?)**
+
+Tôi nghi ngờ rằng bạn có lẽ đang sử dụng tích hợp liên tục trong tổ chức của riêng mình. Nếu không, bạn nên bắt đầu. Đó là một thực hành quan trọng cho phép chúng ta thực hiện các thay đổi một cách nhanh chóng và dễ dàng, và nếu không có nó, hành trình vào microservices sẽ rất đau đớn. Điều đó nói rằng, tôi đã làm việc với nhiều đội, mặc dù nói rằng họ làm CI, nhưng thực ra không hề làm gì cả. Họ nhầm lẫn việc sử dụng một công cụ CI với việc áp dụng thực hành CI. Công cụ chỉ là thứ cho phép cách tiếp cận.
+
+Tôi thực sự thích ba câu hỏi của Jez Humble mà ông hỏi mọi người để kiểm tra xem họ có thực sự hiểu CI là gì không:
+
+*   **Bạn có `check-in` vào `mainline` mỗi ngày một lần không?**
+    Bạn cần đảm bảo mã của mình tích hợp. Nếu bạn không kiểm tra mã của mình cùng với những thay đổi của mọi người khác thường xuyên, bạn sẽ làm cho việc tích hợp trong tương lai trở nên khó khăn hơn. Ngay cả khi bạn đang sử dụng các nhánh sống ngắn để quản lý các thay đổi, hãy tích hợp thường xuyên nhất có thể vào một nhánh `mainline` duy nhất.
+*   **Bạn có một bộ kiểm thử để xác thực các thay đổi của mình không?**
+    Nếu không có các bài kiểm thử, chúng ta chỉ biết rằng về mặt cú pháp, sự tích hợp của chúng ta đã hoạt động, nhưng chúng ta không biết liệu chúng ta có làm hỏng hành vi của hệ thống hay không. CI mà không có một số xác minh rằng mã của chúng ta hoạt động như mong đợi không phải là CI.
+*   **Khi bản dựng bị hỏng, đó có phải là ưu tiên số 1 của đội để sửa nó không?**
+    Một bản dựng màu xanh lá cây (`green build`) thành công có nghĩa là các thay đổi của chúng ta đã được tích hợp một cách an toàn. Một bản dựng màu đỏ (`red build`) có nghĩa là thay đổi cuối cùng có thể đã không tích hợp. Bạn cần phải dừng tất cả các `check-in` khác không liên quan đến việc sửa các bản dựng để nó hoạt động trở lại. Nếu bạn để nhiều thay đổi chồng chất lên nhau, thời gian cần thiết để sửa bản dựng sẽ tăng lên đáng kể. Tôi đã làm việc với các đội nơi bản dựng đã bị hỏng trong nhiều ngày, dẫn đến những nỗ lực đáng kể để cuối cùng có được một bản dựng thành công.
+
+---
+#### **Ánh xạ Tích hợp Liên tục vào Microservices (Mapping Continuous Integration to Microservices)**
+
+Khi suy nghĩ về microservices và tích hợp liên tục, chúng ta cần suy nghĩ về cách các bản dựng CI của chúng ta ánh xạ đến các microservice riêng lẻ. Như tôi đã nói nhiều lần, chúng ta muốn đảm bảo rằng chúng ta có thể thực hiện một thay đổi cho một dịch vụ duy nhất và triển khai nó một cách độc lập với phần còn lại. Với ý nghĩ đó, chúng ta nên ánh xạ các microservice riêng lẻ đến các bản dựng CI và mã nguồn như thế nào?
+
+##### **Một kho lưu trữ, một bản dựng cho tất cả**
+
+Nếu chúng ta bắt đầu với tùy chọn đơn giản nhất, chúng ta có thể gộp mọi thứ lại với nhau. Chúng ta có một kho lưu trữ khổng lồ duy nhất lưu trữ tất cả mã của chúng ta, và có một bản dựng duy nhất, như chúng ta thấy trong Hình 6-1. Bất kỳ `check-in` nào vào kho lưu trữ mã nguồn này sẽ kích hoạt bản dựng của chúng ta, nơi chúng ta sẽ chạy tất cả các bước xác minh liên quan đến tất cả các microservice của mình, và tạo ra nhiều tạo tác, tất cả đều được gắn với cùng một bản dựng.
+
+![alt text](<images/Screenshot from 2025-09-29 13-04-37.png>)
+
+**Hình 6-1.** *Sử dụng một kho lưu trữ mã nguồn duy nhất và bản dựng CI cho tất cả các microservice*
+
+Điều này có vẻ đơn giản hơn nhiều trên bề mặt so với các cách tiếp cận khác: ít kho lưu trữ hơn để lo lắng, và một bản dựng đơn giản hơn về mặt khái niệm. Từ quan điểm của một nhà phát triển, mọi thứ cũng khá đơn giản. Tôi chỉ cần `check in` mã. Nếu tôi phải làm việc trên nhiều dịch vụ cùng một lúc, tôi chỉ phải lo lắng về một `commit` duy nhất.
+
+Mô hình này có thể hoạt động hoàn hảo nếu bạn chấp nhận ý tưởng về các bản phát hành đồng bộ (`lock-step releases`), nơi bạn không ngại triển khai nhiều dịch vụ cùng một lúc. Nói chung, đây là một mẫu hình cần tránh, nhưng rất sớm trong một dự án, đặc biệt nếu chỉ có một đội đang làm việc trên mọi thứ, điều này có thể có ý nghĩa trong một khoảng thời gian ngắn.
+
+Tuy nhiên, có một số nhược điểm đáng kể. Nếu tôi thực hiện một thay đổi một dòng cho một dịch vụ duy nhất—ví dụ, thay đổi hành vi trong dịch vụ người dùng trong Hình 6-1—tất cả các dịch vụ khác đều được xác minh và xây dựng. Điều này có thể mất nhiều thời gian hơn cần thiết—tôi đang chờ đợi những thứ có lẽ không cần phải được kiểm thử. Điều này ảnh hưởng đến **thời gian chu kỳ (cycle time)** của chúng ta, tốc độ mà chúng ta có thể di chuyển một thay đổi duy nhất từ phát triển đến sản xuất. Tuy nhiên, điều đáng lo ngại hơn là biết tạo tác nào nên hoặc không nên được triển khai. Bây giờ tôi có cần triển khai tất cả các dịch vụ đã được xây dựng để đẩy thay đổi nhỏ của mình vào sản xuất không? Có thể khó nói; việc cố gắng đoán dịch vụ nào thực sự đã thay đổi chỉ bằng cách đọc các thông báo `commit` là rất khó. Các tổ chức sử dụng cách tiếp cận này thường quay trở lại việc chỉ triển khai mọi thứ cùng nhau, điều mà chúng ta thực sự muốn tránh.
+
+Hơn nữa, nếu thay đổi một dòng của tôi vào dịch vụ người dùng làm hỏng bản dựng, không có thay đổi nào khác có thể được thực hiện cho các dịch vụ khác cho đến khi sự cố đó được khắc phục. Và hãy nghĩ về một kịch bản nơi bạn có nhiều đội cùng chia sẻ bản dựng khổng lồ này. Ai chịu trách nhiệm?
+
+##### **Một kho lưu trữ, nhiều bản dựng độc lập**
+
+Một biến thể của cách tiếp cận này là có một cây nguồn duy nhất với tất cả mã trong đó, với nhiều bản dựng CI ánh xạ đến các phần của cây nguồn đó, như chúng ta thấy trong Hình 6-2. Với cấu trúc được xác định rõ ràng, bạn có thể dễ dàng ánh xạ các bản dựng đến các phần nhất định của cây nguồn. Nói chung, tôi không phải là một người hâm mộ cách tiếp cận này, vì mô hình này có thể là một phước lành lẫn lộn. Một mặt, quy trình `check-in/check-out` của tôi có thể đơn giản hơn vì tôi chỉ có một kho lưu trữ để lo lắng. Mặt khác, nó trở nên rất dễ dàng để có thói quen `check-in` mã nguồn cho nhiều dịch vụ cùng một lúc, điều này có thể dễ dàng dẫn đến việc thực hiện các thay đổi ghép nối các dịch vụ lại với nhau. Tuy nhiên, tôi sẽ rất thích cách tiếp cận này hơn là có một bản dựng duy nhất cho nhiều dịch vụ.
+
+![alt text](<images/Screenshot from 2025-09-29 13-04-50.png>)
+
+**Hình 6-2.** *Một kho lưu trữ nguồn duy nhất với các thư mục con được ánh xạ đến các bản dựng độc lập*
+
+##### **Một bản dựng cho mỗi dịch vụ**
+
+Vậy có một giải pháp thay thế nào khác không? Cách tiếp cận mà tôi ưa thích là có **một bản dựng CI cho mỗi microservice**, để cho phép chúng ta nhanh chóng thực hiện và xác thực một thay đổi trước khi triển khai vào sản xuất, như được hiển thị trong Hình 6-3. Ở đây mỗi microservice có kho lưu trữ mã nguồn riêng, được ánh xạ đến bản dựng CI riêng của nó. Khi thực hiện một thay đổi, tôi chỉ chạy bản dựng và các bài kiểm thử tôi cần. Tôi nhận được một tạo tác duy nhất để triển khai. Sự phù hợp với quyền sở hữu của đội cũng rõ ràng hơn. Nếu bạn sở hữu dịch vụ, bạn sở hữu kho lưu trữ và bản dựng. Việc thực hiện các thay đổi trên các kho lưu trữ có thể khó khăn hơn trong thế giới này, nhưng tôi sẽ cho rằng điều này dễ giải quyết hơn (ví dụ, bằng cách sử dụng các tập lệnh dòng lệnh) so với nhược điểm của việc kiểm soát nguồn và quy trình xây dựng `monolithic`.
+
+![alt text](<images/Screenshot from 2025-09-29 13-04-56.png>)
+
+**Hình 6-3.** *Sử dụng một kho lưu trữ mã nguồn và bản dựng CI cho mỗi microservice*
+
+Các bài kiểm thử cho một microservice nhất định nên nằm trong kiểm soát nguồn cùng với mã nguồn của microservice đó, để đảm bảo chúng ta luôn biết các bài kiểm thử nào nên được chạy đối với một dịch vụ nhất định.
+
+Vì vậy, mỗi microservice sẽ nằm trong kho lưu trữ mã nguồn riêng của nó, và quy trình xây dựng CI riêng của nó. Chúng ta cũng sẽ sử dụng quy trình xây dựng CI để tạo ra các tạo tác có thể triển khai của mình một cách hoàn toàn tự động. Bây giờ hãy nhìn xa hơn CI để xem phân phối liên tục phù hợp như thế nào.
+
+*(Phần tiếp theo sẽ là "Build Pipelines and Continuous Delivery".)*
+
+Chắc chắn rồi! Chúng ta sẽ tiếp tục với "Build Pipelines and Continuous Delivery", một khái niệm mở rộng từ CI để quản lý toàn bộ quá trình phát hành phần mềm.
+
+---
+
+#### **Đường ống Xây dựng và Phân phối Liên tục (Build Pipelines and Continuous Delivery)**
+
+Rất sớm trong quá trình sử dụng tích hợp liên tục, chúng tôi đã nhận ra giá trị của việc đôi khi có nhiều giai đoạn bên trong một bản dựng. Các bài kiểm thử là một trường hợp rất phổ biến mà điều này phát huy tác dụng. Tôi có thể có rất nhiều bài kiểm thử nhanh, phạm vi nhỏ, và một số lượng nhỏ các bài kiểm thử phạm vi lớn, chậm. Nếu chúng ta chạy tất cả các bài kiểm thử cùng nhau, chúng ta có thể không nhận được phản hồi nhanh khi các bài kiểm thử nhanh của chúng ta thất bại nếu chúng ta đang chờ đợi các bài kiểm thử chậm, phạm vi lớn của mình cuối cùng hoàn thành. Và nếu các bài kiểm thử nhanh thất bại, có lẽ không có nhiều ý nghĩa khi chạy các bài kiểm thử chậm hơn! Một giải pháp cho vấn đề này là có các giai đoạn khác nhau trong bản dựng của chúng ta, tạo ra cái được gọi là **đường ống xây dựng (build pipeline)**. Một giai đoạn cho các bài kiểm thử nhanh hơn, một giai đoạn cho các bài kiểm thử chậm hơn.
+
+Khái niệm đường ống xây dựng này cung cấp cho chúng ta một cách hay để theo dõi tiến trình của phần mềm của chúng ta khi nó vượt qua từng giai đoạn, giúp chúng ta có cái nhìn sâu sắc về chất lượng phần mềm của mình. Chúng ta xây dựng tạo tác của mình, và tạo tác đó được sử dụng trong suốt đường ống. Khi tạo tác của chúng ta di chuyển qua các giai đoạn này, chúng ta cảm thấy ngày càng tự tin hơn rằng phần mềm sẽ hoạt động trong sản xuất.
+
+**Phân phối liên tục (Continuous Delivery - CD)** xây dựng trên khái niệm này, và còn hơn thế nữa. Như được nêu trong cuốn sách cùng tên của Jez Humble và Dave Farley, phân phối liên tục là cách tiếp cận theo đó chúng ta nhận được phản hồi liên tục về sự sẵn sàng sản xuất của mỗi lần `check-in`, và hơn nữa coi mỗi lần `check-in` như một ứng cử viên phát hành.
+
+Để hoàn toàn chấp nhận khái niệm này, chúng ta cần mô hình hóa tất cả các quy trình liên quan đến việc đưa phần mềm của chúng ta từ `check-in` đến sản xuất, và biết bất kỳ phiên bản nào của phần mềm đang ở đâu về mặt được xóa để phát hành. Trong CD, chúng ta làm điều này bằng cách mở rộng ý tưởng về đường ống xây dựng đa giai đoạn để mô hình hóa mọi giai đoạn mà phần mềm của chúng ta phải trải qua, cả thủ công và tự động. Trong Hình 6-4, chúng ta thấy một đường ống mẫu có thể quen thuộc.
+
+![alt text](<images/Screenshot from 2025-09-29 13-05-02.png>)
+
+**Hình 6-4.** *Một quy trình phát hành tiêu chuẩn được mô hình hóa như một đường ống xây dựng*
+
+Ở đây, chúng ta thực sự muốn một công cụ chấp nhận CD như một khái niệm hạng nhất. Tôi đã thấy nhiều người cố gắng hack và mở rộng các công cụ CI để bắt chúng làm CD, thường dẫn đến các hệ thống phức tạp không dễ sử dụng bằng các công cụ xây dựng CD ngay từ đầu. Các công cụ hỗ trợ đầy đủ CD cho phép bạn định nghĩa và trực quan hóa các đường ống này, mô hình hóa toàn bộ con đường đến sản xuất cho phần mềm của bạn. Khi một phiên bản mã của chúng ta di chuyển qua đường ống, nếu nó vượt qua một trong những bước xác minh tự động này, nó sẽ chuyển sang giai đoạn tiếp theo. Các giai đoạn khác có thể là thủ công. Ví dụ, nếu chúng ta có một quy trình kiểm thử chấp nhận người dùng (`user acceptance testing - UAT`) thủ công, tôi nên có thể sử dụng một công cụ CD để mô hình hóa nó. Tôi có thể thấy bản dựng có sẵn tiếp theo sẵn sàng để được triển khai vào môi trường UAT của chúng ta, triển khai nó, và nếu nó vượt qua các kiểm tra thủ công của chúng ta, đánh dấu giai đoạn đó là thành công để nó có thể chuyển sang giai đoạn tiếp theo.
+
+Bằng cách mô hình hóa toàn bộ con đường đến sản xuất cho phần mềm của mình, chúng ta cải thiện đáng kể khả năng hiển thị về chất lượng phần mềm của mình, và cũng có thể giảm đáng kể thời gian giữa các bản phát hành, vì chúng ta có một nơi để quan sát quy trình xây dựng và phát hành của mình, và một điểm tập trung rõ ràng để giới thiệu các cải tiến.
+
+Trong một thế giới microservices, nơi chúng ta muốn đảm bảo chúng ta có thể phát hành các dịch vụ của mình một cách độc lập với nhau, theo đó, cũng như với CI, chúng ta sẽ muốn **một đường ống cho mỗi dịch vụ**. Trong các đường ống của chúng ta, đó là một **tạo tác (artifact)** mà chúng ta muốn tạo ra và di chuyển qua con đường đến sản xuất của chúng ta. Như mọi khi, hóa ra các tạo tác của chúng ta có thể có nhiều kích cỡ và hình dạng. Chúng ta sẽ xem xét một số tùy chọn phổ biến nhất có sẵn cho chúng ta trong giây lát.
+
+#### **Và những Ngoại lệ Không thể tránh khỏi (And the Inevitable Exceptions)**
+
+Như với tất cả các quy tắc tốt, có những ngoại lệ chúng ta cần xem xét. Cách tiếp cận "một microservice cho mỗi bản dựng" hoàn toàn là điều bạn nên hướng tới, nhưng có những lúc một cái gì đó khác lại có ý nghĩa hơn không? Khi một đội bắt đầu một dự án mới, đặc biệt là một dự án `greenfield` nơi họ đang làm việc với một tờ giấy trắng, rất có khả năng sẽ có một lượng lớn sự biến động về việc tìm ra các ranh giới dịch vụ nằm ở đâu. Đây là một lý do tốt, trên thực tế, để giữ các dịch vụ ban đầu của bạn ở phía lớn hơn cho đến khi sự hiểu biết của bạn về miền nghiệp vụ ổn định.
+
+Trong thời gian biến động này, các thay đổi trên các ranh giới dịch vụ có nhiều khả năng xảy ra hơn, và những gì có trong hoặc không có trong một dịch vụ nhất định có khả năng thay đổi thường xuyên. Trong giai đoạn này, việc có tất cả các dịch vụ trong một bản dựng duy nhất để giảm chi phí của các thay đổi xuyên dịch vụ có thể có ý nghĩa.
+
+Tuy nhiên, điều đó có nghĩa là, trong trường hợp này, bạn cần phải chấp nhận việc phát hành tất cả các dịch vụ như một gói. Nó cũng hoàn toàn cần phải là một bước chuyển tiếp. Khi các API dịch vụ ổn định, hãy bắt đầu chuyển chúng ra các bản dựng riêng của chúng. Nếu sau vài tuần (hoặc một số tháng rất nhỏ) bạn không thể có được sự ổn định trong các ranh giới dịch vụ để tách chúng ra một cách đúng đắn, hãy hợp nhất chúng trở lại thành một dịch vụ `monolithic` hơn (mặc dù vẫn giữ sự tách biệt `module` trong ranh giới) và cho mình thời gian để làm quen với miền nghiệp vụ. Điều này phản ánh kinh nghiệm của chính đội SnapCI của chúng tôi, như chúng ta đã thảo luận trong **Chương 3**.
+
+---
+#### **Tạo tác Cụ thể cho Nền tảng (Platform-Specific Artifacts)**
+
+Hầu hết các `technology stack` đều có một loại tạo tác hạng nhất nào đó, cùng với các công cụ để hỗ trợ việc tạo và cài đặt chúng. Ruby có `gems`, Java có các tệp `JAR` và `WAR`, và Python có `eggs`. Các nhà phát triển có kinh nghiệm trong một trong những `stack` này sẽ rất quen thuộc với việc làm việc với (và hy vọng là tạo ra) những tạo tác này.
+
+Tuy nhiên, từ quan điểm của một microservice, tùy thuộc vào `technology stack` của bạn, tạo tác này có thể không đủ. Mặc dù một tệp `JAR` của Java có thể được làm để có thể thực thi và chạy một tiến trình `HTTP` nhúng, đối với những thứ như các ứng dụng Ruby và Python, bạn sẽ mong đợi sử dụng một trình quản lý tiến trình chạy bên trong Apache hoặc Nginx. Vì vậy, chúng ta có thể cần một cách nào đó để cài đặt và cấu hình phần mềm khác mà chúng ta cần để triển khai và khởi chạy các tạo tác của mình. Đây là nơi các công cụ quản lý cấu hình tự động như Puppet và Chef có thể giúp ích.
+
+Một nhược điểm khác ở đây là những tạo tác này cụ thể cho một `technology stack` nhất định, điều này có thể làm cho việc triển khai trở nên khó khăn hơn khi chúng ta có sự kết hợp của các công nghệ đang hoạt động. Hãy nghĩ về nó từ quan điểm của một người đang cố gắng triển khai nhiều dịch vụ cùng nhau. Họ có thể là một nhà phát triển hoặc một người kiểm thử muốn kiểm tra một số chức năng, hoặc có thể là một người quản lý một đợt triển khai sản xuất. Bây giờ hãy tưởng tượng rằng những dịch vụ đó sử dụng ba cơ chế triển khai hoàn toàn khác nhau. Có lẽ chúng ta có một `Ruby Gem`, một tệp `JAR`, và một `package nodeJS NPM`. Liệu họ có cảm ơn bạn không?
+
+Tự động hóa có thể đi một chặng đường dài trong việc che giấu sự khác biệt trong các cơ chế triển khai của các tạo tác cơ bản. Chef, Puppet, và Ansible đều hỗ trợ nhiều tạo tác xây dựng cụ thể cho công nghệ phổ biến khác nhau. Nhưng có những loại tạo tác khác có thể còn dễ làm việc hơn.
+
+*(Phần tiếp theo sẽ thảo luận về "Operating System Artifacts" và "Custom Images".)*
+
+Chắc chắn rồi! Chúng ta sẽ tiếp tục khám phá các loại tạo tác (`artifacts`) khác nhau, bắt đầu với các tạo tác ở cấp độ hệ điều hành.
+
+---
+
+#### **Tạo tác Hệ điều hành (Operating System Artifacts)**
+
+Một cách để tránh các vấn đề liên quan đến các tạo tác cụ thể cho công nghệ là tạo ra các tạo tác gốc (`native`) cho hệ điều hành cơ bản. Ví dụ, đối với một hệ thống dựa trên RedHat– hoặc CentOS, tôi có thể xây dựng các gói `RPM`; đối với Ubuntu, tôi có thể xây dựng một gói `deb`; hoặc đối với Windows, một tệp `MSI`.
+
+Lợi thế của việc sử dụng các tạo tác cụ thể cho HĐH là từ quan điểm triển khai, chúng ta không quan tâm công nghệ cơ bản là gì. Chúng ta chỉ cần sử dụng các công cụ gốc của HĐH để cài đặt gói. Các công cụ HĐH cũng có thể giúp chúng ta gỡ cài đặt và lấy thông tin về các gói, và thậm chí có thể cung cấp các kho lưu trữ gói mà các công cụ CI của chúng ta có thể đẩy lên. Phần lớn công việc được thực hiện bởi trình quản lý gói HĐH cũng có thể bù đắp cho công việc mà bạn có thể phải làm trong một công cụ như Puppet hoặc Chef. Ví dụ, trên tất cả các nền tảng Linux tôi đã sử dụng, bạn có thể định nghĩa các phụ thuộc từ các gói của mình đến các gói khác mà bạn dựa vào, và các công cụ HĐH sẽ tự động cài đặt chúng cho bạn.
+
+Nhược điểm có thể là khó khăn trong việc tạo ra các gói ngay từ đầu. Đối với Linux, công cụ quản lý gói **FPM** cung cấp một sự trừu tượng hóa tốt hơn để tạo các gói HĐH Linux, và việc chuyển đổi từ một triển khai dựa trên `tarball` sang một triển khai dựa trên HĐH có thể khá đơn giản. Không gian Windows có phần phức tạp hơn. Hệ thống đóng gói gốc dưới dạng các trình cài đặt `MSI` và tương tự để lại rất nhiều điều đáng mong đợi khi so sánh với các khả năng trong không gian Linux. Hệ thống gói `NuGet` đã bắt đầu giúp giải quyết vấn đề này, ít nhất là về mặt giúp quản lý các thư viện phát triển. Gần đây hơn, **Chocolatey NuGet** đã mở rộng những ý tưởng này, cung cấp một trình quản lý gói cho Windows được thiết kế để triển khai các công cụ và dịch vụ, giống như các trình quản lý gói trong không gian Linux hơn. Đây chắc chắn là một bước đi đúng hướng, mặc dù thực tế là phong cách thành ngữ (`idiomatic style`) trong Windows vẫn là triển khai một cái gì đó trong IIS có nghĩa là cách tiếp cận này có thể không hấp dẫn đối với một số đội Windows.
+
+Tất nhiên, một nhược điểm khác có thể là nếu bạn đang triển khai trên nhiều hệ điều hành khác nhau. Chi phí quản lý các tạo tác cho các HĐH khác nhau có thể khá cao. Nếu bạn đang tạo phần mềm để người khác cài đặt, bạn có thể không có lựa chọn nào khác. Tuy nhiên, nếu bạn đang cài đặt phần mềm trên các máy bạn kiểm soát, tôi sẽ đề nghị bạn xem xét việc thống nhất hoặc ít nhất là giảm số lượng các hệ điều hành khác nhau bạn sử dụng. Nó có thể giảm đáng kể sự thay đổi trong hành vi từ máy này sang máy khác, và đơn giản hóa việc triển khai và các tác vụ bảo trì.
+
+Nói chung, những đội mà tôi đã thấy đã chuyển sang quản lý gói dựa trên HĐH đã đơn giản hóa cách tiếp cận triển khai của họ, và có xu hướng tránh bẫy của các tập lệnh triển khai lớn, phức tạp. Đặc biệt nếu bạn đang sử dụng Linux, đây có thể là một cách tốt để đơn giản hóa việc triển khai các microservice sử dụng các `technology stack` khác nhau.
+
+#### **Hình ảnh Tùy chỉnh (Custom Images)**
+
+Một trong những thách thức với các hệ thống quản lý cấu hình tự động như Puppet, Chef, và Ansible có thể là thời gian cần thiết để chạy các tập lệnh trên một máy. Hãy lấy một ví dụ đơn giản về một máy chủ được cấp phát và cấu hình để cho phép triển khai một ứng dụng Java. Giả sử tôi đang sử dụng AWS để cấp phát máy chủ, sử dụng hình ảnh Ubuntu tiêu chuẩn. Điều đầu tiên tôi cần làm là cài đặt Oracle JVM để chạy ứng dụng Java của mình. Tôi đã thấy quá trình đơn giản này mất khoảng năm phút, với một vài phút được dành cho việc cấp phát máy, và một vài phút nữa để cài đặt JVM. Sau đó, chúng ta có thể nghĩ đến việc thực sự đặt phần mềm của mình lên đó.
+
+Đây thực sự là một ví dụ khá tầm thường. Chúng ta thường sẽ muốn cài đặt các phần mềm phổ biến khác. Ví dụ, chúng ta có thể muốn sử dụng `collectd` để thu thập các chỉ số HĐH, sử dụng `logstash` để tổng hợp nhật ký, và có lẽ cài đặt các phần phù hợp của `nagios` để giám sát (chúng ta sẽ nói nhiều hơn về phần mềm này trong **Chương 8**). Theo thời gian, nhiều thứ khác có thể được thêm vào, dẫn đến thời gian ngày càng dài cần thiết để cấp phát các phụ thuộc này.
+
+Puppet, Chef, Ansible, và những thứ tương tự có thể thông minh và sẽ tránh cài đặt phần mềm đã có sẵn. Thật không may, điều này không có nghĩa là việc chạy các tập lệnh trên các máy hiện có sẽ luôn nhanh chóng, vì việc chạy tất cả các kiểm tra đều mất thời gian. Chúng ta cũng muốn tránh giữ máy của mình quá lâu, vì chúng ta không muốn cho phép quá nhiều **trôi dạt cấu hình (configuration drift)** (mà chúng ta sẽ khám phá sâu hơn ngay sau đây). Và nếu chúng ta đang sử dụng một nền tảng điện toán theo yêu cầu, chúng ta có thể liên tục tắt và khởi động các phiên bản mới hàng ngày (nếu không muốn nói là thường xuyên hơn), vì vậy bản chất khai báo của các công cụ quản lý cấu hình này có thể có công dụng hạn chế.
+
+Theo thời gian, việc xem các công cụ giống nhau được cài đặt lặp đi lặp lại có thể trở thành một sự phiền toái thực sự. Nếu bạn đang cố gắng làm điều này nhiều lần mỗi ngày—có lẽ như một phần của việc phát triển hoặc CI—điều này trở thành một vấn đề thực sự về mặt cung cấp phản hồi nhanh. Nó cũng có thể dẫn đến thời gian ngừng hoạt động tăng lên khi triển khai trong sản xuất nếu hệ thống của bạn không cho phép triển khai không có thời gian ngừng hoạt động (`zero-downtime deployment`), vì bạn đang chờ đợi để cài đặt tất cả các điều kiện tiên quyết trên máy của mình ngay cả trước khi bạn cài đặt phần mềm của mình. Các mô hình như triển khai **blue/green** (mà chúng ta sẽ thảo luận trong **Chương 7**) có thể giúp giảm thiểu điều này, vì chúng cho phép chúng ta triển khai một phiên bản mới của dịch vụ mà không cần phải gỡ bỏ phiên bản cũ.
+
+Một cách tiếp cận để giảm thời gian khởi động này là tạo ra một **hình ảnh máy ảo (virtual machine image)** tích hợp sẵn một số phụ thuộc chung mà chúng ta sử dụng, như được hiển thị trong Hình 6-5. Tất cả các nền tảng ảo hóa mà tôi đã sử dụng đều cho phép bạn xây dựng hình ảnh của riêng mình, và các công cụ để làm điều đó tiên tiến hơn nhiều so với chỉ vài năm trước. Điều này thay đổi mọi thứ một chút. Bây giờ chúng ta có thể tích hợp các công cụ chung vào hình ảnh của riêng mình. Khi chúng ta muốn triển khai phần mềm của mình, chúng ta khởi động một phiên bản của hình ảnh tùy chỉnh này, và tất cả những gì chúng ta phải làm là cài đặt phiên bản mới nhất của dịch vụ của mình.
+
+![alt text](<images/Screenshot from 2025-09-29 13-05-13.png>)
+
+**Hình 6-5.** *Tạo một hình ảnh VM tùy chỉnh*
+
+Tất nhiên, bởi vì bạn chỉ xây dựng hình ảnh một lần, khi bạn sau đó khởi chạy các bản sao của hình ảnh này, bạn không cần phải dành thời gian cài đặt các phụ thuộc của mình, vì chúng đã có sẵn. Điều này có thể dẫn đến việc tiết kiệm thời gian đáng kể. Nếu các phụ thuộc cốt lõi của bạn không thay đổi, các phiên bản mới của dịch vụ của bạn có thể tiếp tục sử dụng cùng một hình ảnh cơ sở.
+
+Tuy nhiên, có một số nhược điểm với cách tiếp cận này. Việc xây dựng hình ảnh có thể mất một thời gian dài. Điều này có nghĩa là đối với các nhà phát triển, bạn có thể muốn hỗ trợ các cách triển khai dịch vụ khác để đảm bảo họ không phải đợi nửa giờ chỉ để tạo ra một triển khai nhị phân. Thứ hai, một số hình ảnh kết quả có thể lớn. Đây có thể là một vấn đề thực sự nếu bạn đang tạo hình ảnh VMWare của riêng mình, ví dụ, vì việc di chuyển một hình ảnh 20GB qua mạng không phải lúc nào cũng là một hoạt động đơn giản. Chúng ta sẽ xem xét công nghệ `container` ngay sau đây, và cụ thể là Docker, có thể tránh được một số nhược điểm này.
+
+Trong lịch sử, một trong những thách thức là chuỗi công cụ cần thiết để xây dựng một hình ảnh như vậy thay đổi từ nền tảng này sang nền tảng khác. Việc xây dựng một hình ảnh VMWare khác với việc xây dựng một `AMI` của AWS, một hình ảnh Vagrant, hoặc một hình ảnh Rackspace. Đây có thể không phải là vấn đề nếu bạn có cùng một nền tảng ở mọi nơi, nhưng không phải tất cả các tổ chức đều may mắn như vậy. Và ngay cả khi họ có, các công cụ trong lĩnh vực này thường khó làm việc, và chúng không hoạt động tốt với các công cụ khác bạn có thể đang sử dụng để cấu hình máy.
+
+**Packer** là một công cụ được thiết kế để làm cho việc tạo hình ảnh trở nên dễ dàng hơn nhiều. Sử dụng các tập lệnh cấu hình bạn chọn (Chef, Ansible, Puppet, và nhiều hơn nữa được hỗ trợ), nó cho phép chúng ta tạo hình ảnh cho các nền tảng khác nhau từ cùng một cấu hình. Tại thời điểm viết bài, nó có hỗ trợ cho VMWare, AWS, Rackspace Cloud, Digital Ocean, và Vagrant, và tôi đã thấy các đội sử dụng nó thành công để xây dựng các hình ảnh Linux và Windows. Điều này có nghĩa là bạn có thể tạo một hình ảnh để triển khai trên môi trường AWS sản xuất của mình và một hình ảnh Vagrant phù hợp để phát triển và kiểm thử cục bộ, tất cả từ cùng một cấu hình.
+
+##### **Hình ảnh như là Tạo tác (Images as Artifacts)**
+
+Vậy là chúng ta có thể tạo ra các hình ảnh máy ảo tích hợp sẵn các phụ thuộc để tăng tốc độ phản hồi, nhưng tại sao lại dừng lại ở đó? Chúng ta có thể đi xa hơn, tích hợp dịch vụ của mình vào chính hình ảnh đó, và áp dụng mô hình tạo tác dịch vụ của chúng ta là một hình ảnh. Bây giờ, khi chúng ta khởi chạy hình ảnh của mình, dịch vụ của chúng ta đã sẵn sàng hoạt động. Thời gian khởi động thực sự nhanh chóng này là lý do mà Netflix đã áp dụng mô hình tích hợp các dịch vụ của riêng mình dưới dạng `AMI` của AWS.
+
+Cũng như với các gói cụ thể cho HĐH, các hình ảnh VM này trở thành một cách hay để trừu tượng hóa sự khác biệt trong các `technology stack` được sử dụng để tạo ra các dịch vụ. Chúng ta có quan tâm liệu dịch vụ đang chạy trên hình ảnh được viết bằng Ruby hay Java, và sử dụng một `gem` hay một tệp `JAR` không? Tất cả những gì chúng ta quan tâm là nó hoạt động. Sau đó, chúng ta có thể tập trung nỗ lực của mình vào việc tự động hóa việc tạo và triển khai các hình ảnh này. Đây cũng trở thành một cách thực sự gọn gàng để triển khai một khái niệm triển khai khác, **máy chủ bất biến (immutable server)**.
+
+##### **Máy chủ Bất biến (Immutable Servers)**
+
+Bằng cách lưu trữ tất cả cấu hình của chúng ta trong kiểm soát nguồn, chúng ta đang cố gắng đảm bảo rằng chúng ta có thể tự động tái tạo các dịch vụ và hy vọng là toàn bộ môi trường theo ý muốn. Nhưng một khi chúng ta chạy quy trình triển khai của mình, điều gì sẽ xảy ra nếu ai đó đến, đăng nhập vào hộp, và thay đổi mọi thứ một cách độc lập với những gì có trong kiểm soát nguồn? Vấn đề này thường được gọi là **trôi dạt cấu hình (configuration drift)**—mã trong kiểm soát nguồn không còn phản ánh cấu hình của máy chủ đang chạy nữa.
+
+Để tránh điều này, chúng ta có thể đảm bảo rằng không có thay đổi nào được thực hiện đối với một máy chủ đang chạy. Thay vào đó, bất kỳ thay đổi nào, dù nhỏ đến đâu, cũng phải đi qua một đường ống xây dựng để tạo ra một máy mới. Bạn có thể triển khai mẫu hình này mà không cần sử dụng các triển khai dựa trên hình ảnh, nhưng nó cũng là một sự mở rộng hợp lý của việc sử dụng hình ảnh như là các tạo tác. Ví dụ, trong quá trình tạo hình ảnh của mình, chúng ta thực sự có thể vô hiệu hóa `SSH`, đảm bảo rằng không ai có thể đăng nhập vào hộp để thực hiện một thay đổi!
+
+Tất nhiên, những lưu ý tương tự mà chúng ta đã thảo luận trước đó về thời gian chu kỳ vẫn áp dụng. Và chúng ta cũng cần đảm bảo rằng bất kỳ dữ liệu nào chúng ta quan tâm được lưu trữ trên hộp đều được lưu trữ ở nơi khác. Ngoài những sự phức tạp này, tôi đã thấy việc áp dụng mẫu hình này dẫn đến các triển khai đơn giản hơn nhiều, và các môi trường dễ lý giải hơn. Và như tôi đã nói, bất cứ điều gì chúng ta có thể làm để đơn giản hóa mọi thứ nên được theo đuổi!
+
+*(Phần tiếp theo sẽ thảo luận về "Environments", "Service Configuration", và các mô hình ánh xạ dịch vụ-đến-máy chủ.)*
+
+Chắc chắn rồi! Chúng ta sẽ tiếp tục với các phần còn lại của Chương 6, bao gồm các chủ đề quan trọng về môi trường, cấu hình và các mô hình triển khai khác nhau.
+
+---
+
+#### **Môi trường (Environments)**
+
+Khi phần mềm của chúng ta di chuyển qua các giai đoạn của đường ống CD, nó cũng sẽ được triển khai vào các loại môi trường khác nhau. Nếu chúng ta nghĩ về đường ống xây dựng ví dụ trong Hình 6-4, có lẽ chúng ta phải xem xét ít nhất bốn môi trường riêng biệt: một môi trường nơi chúng ta chạy các bài kiểm thử chậm, một môi trường khác cho UAT, một môi trường khác cho hiệu suất, và một môi trường cuối cùng cho sản xuất. Microservice của chúng ta nên giống nhau trong suốt quá trình, nhưng môi trường sẽ khác nhau. Ít nhất, chúng sẽ là các tập hợp cấu hình và máy chủ riêng biệt, khác biệt. Nhưng thường thì chúng có thể khác nhau nhiều hơn thế. Ví dụ, môi trường sản xuất cho dịch vụ của chúng ta có thể bao gồm nhiều máy chủ được cân bằng tải trải rộng trên hai trung tâm dữ liệu, trong khi môi trường kiểm thử của chúng ta có thể chỉ có mọi thứ chạy trên một máy chủ duy nhất. Những sự khác biệt này trong các môi trường có thể gây ra một vài vấn đề.
+
+Cá nhân tôi đã bị cắn bởi điều này nhiều năm trước. Chúng tôi đang triển khai một dịch vụ web Java vào một `container` ứng dụng WebLogic được phân cụm trong sản xuất. Cụm WebLogic này sao chép trạng thái phiên giữa nhiều nút, mang lại cho chúng tôi một mức độ phục hồi nào đó nếu một nút duy nhất bị lỗi. Tuy nhiên, các giấy phép WebLogic rất đắt, cũng như các máy mà phần mềm của chúng tôi được triển khai trên đó. Điều này có nghĩa là trong môi trường kiểm thử của chúng tôi, phần mềm của chúng tôi được triển khai trên một máy duy nhất, trong một cấu hình không phân cụm.
+
+Điều này đã làm chúng tôi tổn thương nặng nề trong một lần phát hành. Để WebLogic có thể sao chép trạng thái phiên giữa các nút, dữ liệu phiên cần phải có khả năng tuần tự hóa đúng cách. Thật không may, một trong các `commit` của chúng tôi đã làm hỏng điều này, vì vậy khi chúng tôi triển khai vào sản xuất, việc sao chép phiên của chúng tôi đã thất bại. Cuối cùng, chúng tôi đã giải quyết vấn đề này bằng cách thúc đẩy mạnh mẽ để sao chép một thiết lập phân cụm trong môi trường kiểm thử của chúng tôi.
+
+Dịch vụ chúng ta muốn triển khai là giống nhau trong tất cả các môi trường khác nhau này, nhưng mỗi môi trường lại phục vụ một mục đích khác nhau. Trên máy tính xách tay của nhà phát triển của tôi, tôi muốn nhanh chóng triển khai dịch vụ, có thể là chống lại các cộng tác viên được `stub`, để chạy các bài kiểm thử hoặc thực hiện một số xác minh thủ công về hành vi, trong khi khi tôi triển khai vào một môi trường sản xuất, tôi có thể muốn triển khai nhiều bản sao của dịch vụ của mình theo một kiểu được cân bằng tải, có thể được chia ra trên một hoặc nhiều trung tâm dữ liệu vì lý do độ bền.
+
+Khi bạn di chuyển từ máy tính xách tay của mình đến máy chủ xây dựng đến môi trường UAT và đến sản xuất, bạn sẽ muốn đảm bảo rằng các môi trường của bạn ngày càng giống sản xuất hơn để phát hiện bất kỳ vấn đề nào liên quan đến những khác biệt về môi trường này sớm hơn. Đây sẽ là một sự cân bằng liên tục. Đôi khi thời gian và chi phí để tái tạo các môi trường giống sản xuất có thể là quá lớn, vì vậy bạn phải thỏa hiệp. Ngoài ra, đôi khi việc sử dụng một môi trường giống sản xuất có thể làm chậm các vòng lặp phản hồi; ví dụ, việc chờ đợi 25 máy cài đặt phần mềm của bạn trong AWS có thể chậm hơn nhiều so với việc chỉ cần triển khai dịch vụ của bạn vào một phiên bản Vagrant cục bộ.
+
+Sự cân bằng này, giữa các môi trường giống sản xuất và phản hồi nhanh, sẽ không tĩnh. Hãy để mắt đến các lỗi bạn tìm thấy ở hạ nguồn và thời gian phản hồi của bạn, và điều chỉnh sự cân bằng này khi cần thiết.
+
+Việc quản lý các môi trường cho các hệ thống `monolithic` một tạo tác có thể là một thách thức, đặc biệt nếu bạn không có quyền truy cập vào các hệ thống có thể tự động hóa dễ dàng. Khi bạn nghĩ về nhiều môi trường cho mỗi microservice, điều này có thể còn đáng sợ hơn. Chúng ta sẽ xem xét ngay sau đây một số nền tảng triển khai khác nhau có thể làm cho điều này dễ dàng hơn nhiều cho chúng ta.
+
+#### **Cấu hình Dịch vụ (Service Configuration)**
+
+Các dịch vụ của chúng ta cần một số cấu hình. Lý tưởng nhất, đây nên là một lượng nhỏ, và giới hạn ở những tính năng thay đổi từ môi trường này sang môi trường khác, chẳng hạn như *tên người dùng và mật khẩu nào tôi nên sử dụng để kết nối với cơ sở dữ liệu của mình?* Cấu hình thay đổi từ môi trường này sang môi trường khác nên được giữ ở mức tối thiểu tuyệt đối. Càng nhiều cấu hình của bạn thay đổi hành vi dịch vụ cơ bản, và càng nhiều cấu hình đó thay đổi từ môi trường này sang môi trường khác, bạn sẽ càng tìm thấy các vấn đề chỉ trong một số môi trường nhất định, điều này cực kỳ đau đớn.
+
+Vì vậy, nếu chúng ta có một số cấu hình cho dịch vụ của mình thay đổi từ môi trường này sang môi trường khác, chúng ta nên xử lý điều này như thế nào như một phần của quy trình triển khai của mình? Một tùy chọn là xây dựng một tạo tác cho mỗi môi trường, với cấu hình bên trong chính tạo tác đó. Ban đầu, điều này có vẻ hợp lý. Cấu hình được tích hợp sẵn; chỉ cần triển khai nó và mọi thứ sẽ hoạt động tốt, phải không? Điều này có vấn đề. Hãy nhớ khái niệm về phân phối liên tục. Chúng ta muốn tạo ra một tạo tác đại diện cho ứng cử viên phát hành của chúng ta, và di chuyển nó qua đường ống của chúng ta, xác nhận rằng nó đủ tốt để đi vào sản xuất. Hãy tưởng tượng tôi xây dựng các tạo tác `Customer-Service-Test` và `Customer-Service-Prod`. Nếu tạo tác `Customer-Service-Test` của tôi vượt qua các bài kiểm thử, nhưng chính tạo tác `Customer-Service-Prod` là cái tôi thực sự triển khai, liệu tôi có thể chắc chắn rằng tôi đã xác minh phần mềm thực sự kết thúc trong sản xuất không?
+
+Cũng có những thách thức khác.
+*   **Thứ nhất**, có thêm thời gian để xây dựng những tạo tác này.
+*   **Thứ hai**, thực tế là bạn cần biết tại thời điểm xây dựng những môi trường nào tồn tại.
+*   **Và làm thế nào để bạn xử lý dữ liệu cấu hình nhạy cảm?** Tôi không muốn thông tin về mật khẩu sản xuất được `check-in` cùng với mã nguồn của mình, nhưng nếu nó cần thiết tại thời điểm xây dựng để tạo ra tất cả những tạo tác đó, điều này thường khó tránh khỏi.
+
+Một cách tiếp cận tốt hơn là tạo ra một tạo tác duy nhất, và quản lý cấu hình riêng biệt. Đây có thể là một tệp thuộc tính tồn tại cho mỗi môi trường, hoặc các tham số khác nhau được truyền vào một quy trình cài đặt. Một tùy chọn phổ biến khác, đặc biệt là khi đối phó với một số lượng lớn hơn các microservice, là sử dụng một hệ thống chuyên dụng để cung cấp cấu hình, mà chúng ta sẽ khám phá nhiều hơn trong **Chương 11**.
+
+#### **Ánh xạ Dịch vụ-đến-Máy chủ (Service-to-Host Mapping)**
+
+Một trong những câu hỏi xuất hiện khá sớm trong cuộc thảo luận về microservices là "Bao nhiêu dịch vụ cho mỗi máy?" Trước khi chúng ta tiếp tục, chúng ta nên chọn một thuật ngữ tốt hơn là *máy*, hoặc thậm chí là *box* chung chung hơn mà tôi đã sử dụng trước đó. Trong thời đại ảo hóa này, sự ánh xạ giữa một **máy chủ (host)** đang chạy một hệ điều hành và cơ sở hạ tầng vật lý cơ bản có thể thay đổi rất nhiều. Do đó, tôi có xu hướng nói về các **máy chủ**, sử dụng chúng như một đơn vị cô lập chung—cụ thể là, một hệ điều hành mà tôi có thể cài đặt và chạy các dịch vụ của mình. Nếu bạn đang triển khai trực tiếp lên các máy vật lý, thì một máy chủ vật lý ánh xạ đến một máy chủ (điều này có lẽ không hoàn toàn đúng về mặt thuật ngữ trong bối cảnh này, nhưng trong trường hợp không có các thuật ngữ tốt hơn có thể phải đủ). Nếu bạn đang sử dụng ảo hóa, một máy vật lý duy nhất có thể ánh xạ đến nhiều máy chủ độc lập, mỗi máy chủ có thể chứa một hoặc nhiều dịch vụ.
+
+Vì vậy, khi suy nghĩ về các mô hình triển khai khác nhau, chúng ta sẽ nói về các máy chủ. Vậy thì, chúng ta nên có bao nhiêu dịch vụ cho mỗi máy chủ?
+
+Tôi có một quan điểm chắc chắn về mô hình nào là thích hợp hơn, nhưng có một số yếu tố cần xem xét khi tìm ra mô hình nào sẽ phù hợp với bạn. Cũng rất quan trọng để hiểu rằng một số lựa chọn chúng ta đưa ra về mặt này sẽ hạn chế một số tùy chọn triển khai có sẵn cho chúng ta.
+
+##### **Nhiều Dịch vụ trên mỗi Máy chủ (Multiple Services Per Host)**
+
+Việc có nhiều dịch vụ trên mỗi máy chủ, như được hiển thị trong Hình 6-6, hấp dẫn vì một số lý do.
+*   **Thứ nhất**, hoàn toàn từ quan điểm quản lý máy chủ, nó đơn giản hơn. Trong một thế giới nơi một đội quản lý cơ sở hạ tầng và một đội khác quản lý phần mềm, khối lượng công việc của đội cơ sở hạ tầng thường là một hàm của số lượng máy chủ mà họ phải quản lý. Nếu nhiều dịch vụ được đóng gói trên một máy chủ duy nhất, khối lượng công việc quản lý máy chủ không tăng lên khi số lượng dịch vụ tăng lên.
+*   **Thứ hai** là chi phí. Ngay cả khi bạn có quyền truy cập vào một nền tảng ảo hóa cho phép bạn cấp phát và thay đổi kích thước các máy chủ ảo, việc ảo hóa có thể thêm một chi phí làm giảm các tài nguyên cơ bản có sẵn cho các dịch vụ của bạn.
+
+Theo quan điểm của tôi, cả hai vấn đề này đều có thể được giải quyết bằng các phương pháp làm việc mới và công nghệ, và chúng ta sẽ khám phá điều đó ngay sau đây.
+
+Mô hình này cũng quen thuộc với những người triển khai vào một dạng `container` ứng dụng nào đó. Theo một số cách, việc sử dụng một `container` ứng dụng là một trường hợp đặc biệt của mô hình nhiều dịch vụ trên mỗi máy chủ, vì vậy chúng ta sẽ xem xét điều đó riêng. Mô hình này cũng có thể đơn giản hóa cuộc sống của nhà phát triển. Việc triển khai nhiều dịch vụ vào một máy chủ duy nhất trong sản xuất đồng nghĩa với việc triển khai nhiều dịch vụ vào một máy trạm hoặc máy tính xách tay phát triển cục bộ. Nếu chúng ta muốn xem xét một mô hình thay thế, chúng ta muốn tìm một cách để giữ cho điều này đơn giản về mặt khái niệm cho các nhà phát triển.
+
+![alt text](<images/Screenshot from 2025-09-29 13-05-21.png>)
+
+**Hình 6-6.** *Nhiều microservice trên mỗi máy chủ*
+
+Tuy nhiên, có một số thách thức với mô hình này.
+*   **Thứ nhất**, nó có thể làm cho việc giám sát trở nên khó khăn hơn. Ví dụ, khi theo dõi CPU, tôi có cần theo dõi CPU của một dịch vụ độc lập với các dịch vụ khác không? Hay tôi quan tâm đến CPU của toàn bộ hộp? Các tác dụng phụ cũng có thể khó tránh khỏi. Nếu một dịch vụ chịu tải đáng kể, nó có thể làm giảm các tài nguyên có sẵn cho các bộ phận khác của hệ thống. Gilt, khi mở rộng quy mô số lượng dịch vụ mà nó chạy, đã gặp phải vấn đề này. Ban đầu, nó cho cùng tồn tại nhiều dịch vụ trên một hộp duy nhất, nhưng tải không đều trên một trong các dịch vụ sẽ có tác động bất lợi đến mọi thứ khác đang chạy trên máy chủ đó. Điều này cũng làm cho việc phân tích tác động của các sự cố máy chủ trở nên phức tạp hơn—việc đưa một máy chủ duy nhất ra khỏi hoạt động có thể có hiệu ứng gợn sóng lớn.
+*   **Việc triển khai các dịch vụ** cũng có thể phức tạp hơn một chút, vì việc đảm bảo một lần triển khai không ảnh hưởng đến lần khác dẫn đến những cơn đau đầu bổ sung. Ví dụ, nếu tôi sử dụng Puppet để chuẩn bị một máy chủ, nhưng mỗi dịch vụ có các phụ thuộc khác nhau (và có khả năng mâu thuẫn), làm thế nào để tôi làm cho điều đó hoạt động? Trong trường hợp tồi tệ nhất, tôi đã thấy mọi người ràng buộc việc triển khai nhiều dịch vụ lại với nhau, triển khai nhiều dịch vụ khác nhau vào một máy chủ duy nhất trong một bước, để cố gắng đơn giản hóa việc triển khai nhiều dịch vụ vào một máy chủ. Theo quan điểm của tôi, lợi ích nhỏ trong việc cải thiện sự đơn giản bị vượt qua rất nhiều bởi thực tế là chúng ta đã từ bỏ một trong những lợi ích chính của microservices: phấn đấu cho việc phát hành phần mềm của chúng ta một cách độc lập. Nếu bạn áp dụng mô hình nhiều dịch vụ trên mỗi máy chủ, hãy chắc chắn giữ vững ý tưởng rằng mỗi dịch vụ nên được triển khai một cách độc lập.
+*   Mô hình này cũng có thể **cản trở quyền tự chủ của các đội**. Nếu các dịch vụ cho các đội khác nhau được cài đặt trên cùng một máy chủ, ai có quyền cấu hình máy chủ cho các dịch vụ của họ? Rất có thể, điều này cuối cùng sẽ được xử lý bởi một đội ngũ tập trung, có nghĩa là cần nhiều sự phối hợp hơn để triển khai các dịch vụ.
+*   Một vấn đề khác là tùy chọn này có thể **hạn chế các tùy chọn tạo tác triển khai của chúng ta**. Các triển khai dựa trên hình ảnh không thể thực hiện được, cũng như các máy chủ bất biến trừ khi bạn ràng buộc nhiều dịch vụ khác nhau lại với nhau trong một tạo tác duy nhất, điều mà chúng ta thực sự muốn tránh.
+*   Thực tế là chúng ta có nhiều dịch vụ trên một máy chủ duy nhất có nghĩa là các nỗ lực **nhắm mục tiêu mở rộng quy mô** đến dịch vụ cần nó nhất có thể trở nên phức tạp. Tương tự như vậy, nếu một microservice xử lý dữ liệu và các hoạt động đặc biệt nhạy cảm, chúng ta có thể muốn thiết lập máy chủ cơ bản một cách khác biệt, hoặc có lẽ thậm chí đặt chính máy chủ đó trong một phân đoạn mạng riêng biệt. Việc có mọi thứ trên một máy chủ có nghĩa là chúng ta có thể phải đối xử với tất cả các dịch vụ theo cùng một cách ngay cả khi nhu cầu của chúng khác nhau.
+
+Như đồng nghiệp của tôi, Neal Ford, đã nói, nhiều phương pháp làm việc của chúng ta xung quanh việc triển khai và quản lý máy chủ là một nỗ lực để tối ưu hóa cho sự khan hiếm tài nguyên. Trong quá khứ, tùy chọn duy nhất nếu chúng ta muốn một máy chủ khác là mua hoặc thuê một máy vật lý khác. Điều này thường có thời gian thực hiện dài và dẫn đến một cam kết tài chính dài hạn. Không có gì lạ khi các khách hàng tôi đã làm việc cùng chỉ cấp phát các máy chủ mới mỗi hai đến ba năm một lần, và việc cố gắng có được các máy bổ sung ngoài các mốc thời gian này là rất khó khăn. Nhưng các nền tảng điện toán theo yêu cầu đã giảm đáng kể chi phí của các tài nguyên điện toán, và những cải tiến trong công nghệ ảo hóa có nghĩa là ngay cả đối với cơ sở hạ tầng được lưu trữ nội bộ cũng có nhiều sự linh hoạt hơn.
+
+*(Phần tiếp theo sẽ đi sâu vào "Application Containers" và mô hình "Single Service Per Host".)*
+
+Chắc chắn rồi! Chúng ta sẽ tiếp tục với phần còn lại của Chương 6, đi sâu vào các mô hình triển khai còn lại và tầm quan trọng của tự động hóa.
+
+---
+
+##### **Container Ứng dụng (Application Containers)**
+
+Nếu bạn quen thuộc với việc triển khai các ứng dụng .NET đằng sau IIS hoặc các ứng dụng Java vào một `servlet container`, bạn sẽ rất quen thuộc với mô hình nơi nhiều dịch vụ hoặc ứng dụng riêng biệt nằm bên trong một `container` ứng dụng duy nhất, mà lần lượt nằm trên một máy chủ duy nhất, như chúng ta thấy trong Hình 6-7. Ý tưởng là `container` ứng dụng mà các dịch vụ của bạn sống trong đó mang lại cho bạn những lợi ích về mặt khả năng quản lý được cải thiện, chẳng hạn như hỗ trợ phân cụm (`clustering`) để nhóm nhiều phiên bản lại với nhau, các công cụ giám sát, và những thứ tương tự.
+
+![alt text](<images/Screenshot from 2025-09-29 13-05-29.png>)
+
+**Hình 6-7.** *Nhiều microservice trên mỗi máy chủ (trong một container ứng dụng)*
+
+Thiết lập này cũng có thể mang lại lợi ích về mặt giảm chi phí của các `runtime` ngôn ngữ. Hãy xem xét việc chạy năm dịch vụ Java trong một `servlet container` Java duy nhất. Tôi chỉ có chi phí của một JVM duy nhất. So sánh điều này với việc chạy năm JVM độc lập trên cùng một máy chủ khi sử dụng các `container` nhúng. Điều đó nói rằng, tôi vẫn cảm thấy rằng các `container` ứng dụng này có đủ nhược điểm mà bạn nên tự thử thách mình để xem liệu chúng có thực sự cần thiết hay không.
+
+Trong số các nhược điểm, đầu tiên là chúng chắc chắn **hạn chế lựa chọn công nghệ**. Bạn phải chấp nhận một `technology stack`. Điều này có thể không chỉ hạn chế các lựa chọn công nghệ cho việc triển khai chính dịch vụ, mà còn cả các tùy chọn bạn có về mặt tự động hóa và quản lý các hệ thống của mình. Như chúng ta sẽ thảo luận ngay sau đây, một trong những cách chúng ta có thể giải quyết chi phí quản lý nhiều máy chủ là xung quanh tự động hóa, và do đó việc hạn chế các tùy chọn của chúng ta để giải quyết vấn đề này có thể gây hại gấp đôi.
+
+Tôi cũng sẽ đặt câu hỏi về một số giá trị của các tính năng `container`. Nhiều trong số chúng quảng cáo khả năng quản lý các cụm để hỗ trợ trạng thái phiên chia sẻ trong bộ nhớ, một điều chúng ta hoàn toàn muốn tránh trong mọi trường hợp do những thách thức mà điều này tạo ra khi mở rộng quy mô các dịch vụ của chúng ta. Và các khả năng giám sát mà chúng cung cấp sẽ không đủ khi chúng ta xem xét các loại giám sát kết hợp mà chúng ta muốn thực hiện trong một thế giới microservices, như chúng ta sẽ thấy trong **Chương 8**. Nhiều trong số chúng cũng có thời gian khởi động khá chậm, ảnh hưởng đến chu kỳ phản hồi của nhà phát triển.
+
+Cũng có những bộ vấn đề khác. Việc cố gắng thực hiện quản lý vòng đời phù hợp của các ứng dụng trên các nền tảng như JVM có thể có vấn đề, và phức tạp hơn so với việc chỉ khởi động lại một JVM. Việc phân tích việc sử dụng tài nguyên và các luồng cũng phức tạp hơn nhiều, vì bạn có nhiều ứng dụng chia sẻ cùng một tiến trình. Và hãy nhớ rằng, ngay cả khi bạn nhận được giá trị từ một `container` cụ thể cho công nghệ, chúng không miễn phí. Ngoài thực tế là nhiều trong số chúng là thương mại và do đó có một hàm ý chi phí, chúng còn thêm một chi phí tài nguyên tự thân.
+
+Cuối cùng, cách tiếp cận này một lần nữa là một nỗ lực để tối ưu hóa cho sự khan hiếm tài nguyên mà đơn giản là có thể không còn tồn tại nữa. Dù bạn quyết định có nhiều dịch vụ trên mỗi máy chủ như một mô hình triển khai, tôi sẽ đề nghị mạnh mẽ xem xét các microservice có thể triển khai độc lập, tự chứa như là các tạo tác. Đối với .NET, điều này có thể thực hiện được với những thứ như Nancy, và Java đã hỗ trợ mô hình này trong nhiều năm. Ví dụ, `container` Jetty nhúng đáng kính tạo nên một máy chủ `HTTP` tự chứa rất nhẹ, là cốt lõi của `stack` Dropwizard. Google đã được biết đến là rất vui vẻ sử dụng các `container` Jetty nhúng để phục vụ nội dung tĩnh trực tiếp, vì vậy chúng ta biết những thứ này có thể hoạt động ở quy mô lớn.
+
+##### **Một Dịch vụ trên mỗi Máy chủ (Single Service Per Host)**
+
+Với mô hình một dịch vụ trên mỗi máy chủ được hiển thị trong Hình 6-8, chúng ta tránh được các tác dụng phụ của việc có nhiều máy chủ sống trên một máy chủ duy nhất, làm cho việc giám sát và khắc phục sự cố đơn giản hơn nhiều. Chúng ta có khả năng đã giảm bớt các điểm lỗi duy nhất của mình. Một sự cố đối với một máy chủ chỉ nên ảnh hưởng đến một dịch vụ duy nhất, mặc dù điều đó không phải lúc nào cũng rõ ràng khi bạn đang sử dụng một nền tảng ảo hóa. Chúng ta sẽ đề cập đến việc thiết kế cho quy mô và lỗi nhiều hơn trong **Chương 11**. Chúng ta cũng có thể dễ dàng mở rộng quy mô một dịch vụ độc lập với các dịch vụ khác, và giải quyết các mối quan tâm về bảo mật dễ dàng hơn bằng cách chỉ tập trung sự chú ý của chúng ta vào dịch vụ và máy chủ yêu cầu nó.
+
+![alt text](<images/Screenshot from 2025-09-29 13-05-36.png>)
+
+**Hình 6-8.** *Một microservice duy nhất trên mỗi máy chủ*
+
+Điều quan trọng không kém là chúng ta đã mở ra tiềm năng sử dụng các kỹ thuật triển khai thay thế như các triển khai dựa trên hình ảnh hoặc mẫu hình máy chủ bất biến, mà chúng ta đã thảo luận trước đó.
+
+Chúng ta đã thêm rất nhiều sự phức tạp trong việc áp dụng một kiến trúc microservice. Điều cuối cùng chúng ta muốn làm là đi tìm kiếm thêm các nguồn phức tạp. Theo quan điểm của tôi, nếu bạn không có một PaaS khả thi, thì mô hình này thực hiện một công việc rất tốt trong việc giảm sự phức tạp tổng thể của một hệ thống. Việc có một mô hình một dịch vụ trên mỗi máy chủ dễ lý giải hơn đáng kể và có thể giúp giảm sự phức tạp. Nếu bạn chưa thể chấp nhận mô hình này, tôi sẽ không nói rằng microservices không dành cho bạn. Nhưng tôi sẽ đề nghị bạn xem xét việc chuyển sang mô hình này theo thời gian như một cách để giảm sự phức tạp mà một kiến trúc microservice có thể mang lại.
+
+Việc có một số lượng máy chủ tăng lên có những nhược điểm tiềm tàng. Chúng ta có nhiều máy chủ hơn để quản lý, và cũng có thể có một hàm ý chi phí của việc chạy nhiều máy chủ riêng biệt hơn. Mặc dù có những vấn đề này, đây vẫn là mô hình tôi ưa thích cho các kiến trúc microservice. Và chúng ta sẽ nói về một vài điều chúng ta có thể làm để giảm chi phí xử lý số lượng lớn máy chủ ngay sau đây.
+
+##### **Nền tảng như một Dịch vụ (Platform as a Service - PaaS)**
+
+Khi sử dụng một **nền tảng như một dịch vụ (Platform as a Service - PaaS)**, bạn đang làm việc ở một mức độ trừu tượng cao hơn so với một máy chủ duy nhất. Hầu hết các nền tảng này dựa vào việc lấy một tạo tác cụ thể cho công nghệ, chẳng hạn như một tệp `WAR` của Java hoặc một `gem` của Ruby, và tự động cấp phát và chạy nó cho bạn. Một số nền tảng này sẽ cố gắng một cách minh bạch xử lý việc mở rộng quy mô hệ thống lên và xuống cho bạn, mặc dù một cách phổ biến hơn (và theo kinh nghiệm của tôi, ít bị lỗi hơn) sẽ cho phép bạn một số quyền kiểm soát về số lượng nút mà dịch vụ của bạn có thể chạy, nhưng nó sẽ xử lý phần còn lại.
+
+Tại thời điểm viết bài, hầu hết các giải pháp PaaS tốt nhất, bóng bẩy nhất đều được lưu trữ. Heroku hiện lên trong tâm trí có lẽ là tiêu chuẩn vàng của PaaS. Nó không chỉ xử lý việc chạy dịch vụ của bạn, nó còn hỗ trợ các dịch vụ như cơ sở dữ liệu một cách rất đơn giản.
+
+Các giải pháp tự lưu trữ có tồn tại trong không gian này, mặc dù chúng còn non nớt hơn các giải pháp được lưu trữ.
+
+Khi các giải pháp PaaS hoạt động tốt, chúng hoạt động rất tốt. Tuy nhiên, khi chúng không hoàn toàn hoạt động tốt cho bạn, bạn thường không có nhiều quyền kiểm soát về việc đi sâu vào bên trong để khắc phục mọi thứ. Đây là một phần của sự đánh đổi bạn thực hiện. Tôi sẽ nói rằng theo kinh nghiệm của tôi, các giải pháp PaaS càng thông minh hơn, chúng càng có nhiều khả năng sai. Tôi đã sử dụng nhiều hơn một PaaS cố gắng tự động mở rộng quy mô dựa trên việc sử dụng ứng dụng, nhưng lại làm điều đó một cách tồi tệ. Các phỏng đoán thúc đẩy những sự thông minh này có xu hướng được điều chỉnh cho ứng dụng trung bình thay vì trường hợp sử dụng cụ thể của bạn. Ứng dụng của bạn càng không chuẩn, khả năng nó không hoạt động tốt với một PaaS càng cao.
+
+Vì các giải pháp PaaS tốt xử lý rất nhiều cho bạn, chúng có thể là một cách tuyệt vời để xử lý chi phí gia tăng mà chúng ta có được khi có nhiều bộ phận chuyển động hơn. Điều đó nói rằng, tôi vẫn không chắc rằng chúng ta đã có tất cả các mô hình đúng trong không gian này, và các tùy chọn tự lưu trữ hạn chế có nghĩa là cách tiếp cận này có thể không hoạt động cho bạn. Tuy nhiên, trong thập kỷ tới, tôi hy vọng chúng ta sẽ nhắm mục tiêu PaaS để triển khai nhiều hơn là phải tự quản lý các máy chủ và triển khai các dịch vụ riêng lẻ.
+
+---
+#### **Tự động hóa (Automation)**
+
+Câu trả lời cho rất nhiều vấn đề chúng ta đã nêu ra cho đến nay đều quy về **tự động hóa (automation)**. Với một số lượng nhỏ máy móc, có thể quản lý mọi thứ một cách thủ công. Tôi đã từng làm điều này. Tôi nhớ đã chạy một bộ nhỏ các máy sản xuất, và tôi sẽ thu thập nhật ký, triển khai phần mềm, và kiểm tra các tiến trình bằng cách đăng nhập thủ công vào hộp. Năng suất của tôi dường như bị hạn chế bởi số lượng cửa sổ đầu cuối tôi có thể mở cùng một lúc—một màn hình thứ hai là một bước tiến lớn. Tuy nhiên, điều này nhanh chóng bị phá vỡ.
+
+Một trong những sự phản đối đối với thiết lập một dịch vụ trên mỗi máy chủ là nhận thức rằng lượng chi phí để quản lý các máy chủ này sẽ tăng lên. Điều này chắc chắn đúng nếu bạn đang làm mọi thứ một cách thủ công. Gấp đôi máy chủ, gấp đôi công việc! Nhưng nếu chúng ta tự động hóa việc kiểm soát các máy chủ của mình, và việc triển khai các dịch vụ, thì không có lý do gì việc thêm nhiều máy chủ hơn lại làm tăng khối lượng công việc của chúng ta một cách tuyến tính.
+
+Nhưng ngay cả khi chúng ta giữ số lượng máy chủ nhỏ, chúng ta vẫn sẽ có rất nhiều dịch vụ. Điều đó có nghĩa là nhiều lần triển khai để xử lý, các dịch vụ để giám sát, nhật ký để thu thập. Tự động hóa là điều cần thiết.
+
+Tự động hóa cũng là cách chúng ta có thể đảm bảo rằng các nhà phát triển của chúng ta vẫn làm việc hiệu quả. Việc cho họ khả năng **tự phục vụ (self-service)** cấp phát các dịch vụ riêng lẻ hoặc các nhóm dịch vụ là chìa khóa để làm cho cuộc sống của các nhà phát triển dễ dàng hơn. Lý tưởng nhất, các nhà phát triển nên có quyền truy cập vào chính xác cùng một chuỗi công cụ được sử dụng để triển khai các dịch vụ sản xuất của chúng ta để đảm bảo rằng chúng ta có thể phát hiện các vấn đề sớm. Chúng ta sẽ xem xét rất nhiều công nghệ trong chương này chấp nhận quan điểm này.
+
+##### **Hai Nghiên cứu Điển hình về Sức mạnh của Tự động hóa (Two Case Studies on the Power of Automation)**
+
+Có lẽ sẽ hữu ích nếu cung cấp cho bạn một vài ví dụ cụ thể giải thích sức mạnh của tự động hóa tốt. Một trong những khách hàng của chúng tôi ở Úc là RealEstate.com.au (REA). Trong số những thứ khác, công ty cung cấp danh sách bất động sản cho khách hàng bán lẻ và thương mại ở Úc và những nơi khác trong khu vực Châu Á-Thái Bình Dương. Trong nhiều năm, họ đã chuyển nền tảng của mình theo hướng một thiết kế phân tán, microservices. Khi họ bắt đầu hành trình này, họ đã phải dành rất nhiều thời gian để hoàn thiện các công cụ xung quanh các dịch vụ—làm cho các nhà phát triển dễ dàng cấp phát máy, triển khai mã của họ, hoặc giám sát chúng. Điều này gây ra một công việc tải trước để bắt đầu mọi thứ.
+
+Trong ba tháng đầu tiên của bài tập này, REA đã có thể đưa chỉ hai microservice mới vào sản xuất, với đội ngũ phát triển chịu trách nhiệm hoàn toàn cho toàn bộ việc xây dựng, triển khai và hỗ trợ các dịch vụ. Trong ba tháng tiếp theo, từ 10–15 dịch vụ đã được đưa vào hoạt động theo cách tương tự. Vào cuối giai đoạn 18 tháng, REA đã có hơn 60–70 dịch vụ.
+
+Loại mẫu hình này cũng được chứng thực bởi kinh nghiệm của Gilt, một nhà bán lẻ thời trang trực tuyến bắt đầu vào năm 2007. Ứng dụng Rails `monolithic` của Gilt bắt đầu trở nên khó mở rộng quy mô, và công ty đã quyết định vào năm 2009 bắt đầu phân tách hệ thống thành các microservice. Một lần nữa, tự động hóa, đặc biệt là các công cụ để giúp các nhà phát triển, được đưa ra như một lý do chính để thúc đẩy sự bùng nổ của Gilt trong việc sử dụng microservices. Một năm sau, Gilt có khoảng 10 microservice hoạt động; đến năm 2012, hơn 100; và vào năm 2014, hơn 450 microservice theo thống kê của chính Gilt—nói cách khác, khoảng ba dịch vụ cho mỗi nhà phát triển tại Gilt.
+
+##### **Từ Vật lý đến Ảo (From Physical to Virtual)**
+
+Một trong những công cụ chính có sẵn cho chúng ta trong việc quản lý một số lượng lớn máy chủ là tìm cách chia nhỏ các máy vật lý hiện có thành các phần nhỏ hơn. Ảo hóa truyền thống như VMWare hoặc được AWS sử dụng đã mang lại những lợi ích to lớn trong việc giảm chi phí quản lý máy chủ. Tuy nhiên, đã có một số tiến bộ mới trong không gian này rất đáng để khám phá, vì chúng có thể mở ra những khả năng thú vị hơn nữa để đối phó với kiến trúc microservice của chúng ta.
+
+*(Phần còn lại của chương sẽ đi sâu vào các công nghệ ảo hóa và container hóa cụ thể như `Vagrant`, `Linux Containers`, và `Docker`, cũng như các giao diện triển khai.)*
+
+Chắc chắn rồi! Chúng ta sẽ đi sâu vào các công nghệ ảo hóa và container hóa, những công cụ cực kỳ mạnh mẽ để quản lý môi trường triển khai microservices.
+
+---
+
+##### **Ảo hóa Truyền thống (Traditional Virtualization)**
+
+Tại sao việc có nhiều máy chủ lại tốn kém? Chà, nếu bạn cần một máy chủ vật lý cho mỗi máy chủ, câu trả lời khá rõ ràng. Nếu đây là thế giới bạn đang hoạt động, thì mô hình nhiều dịch vụ trên mỗi máy chủ có lẽ là phù hợp với bạn, mặc dù đừng ngạc nhiên nếu điều này trở thành một ràng buộc ngày càng thách thức. Tuy nhiên, tôi nghi ngờ rằng hầu hết các bạn đang sử dụng một loại ảo hóa nào đó. Ảo hóa cho phép chúng ta chia nhỏ một máy chủ vật lý thành các máy chủ riêng biệt, mỗi máy chủ có thể chạy những thứ khác nhau. Vì vậy, nếu chúng ta muốn một dịch vụ trên mỗi máy chủ, chúng ta không thể chỉ chia nhỏ cơ sở hạ tầng vật lý của mình thành các phần ngày càng nhỏ hơn sao?
+
+Chà, đối với một số người, bạn có thể. Tuy nhiên, việc chia nhỏ một máy thành các máy ảo (`VMs`) ngày càng tăng không phải là miễn phí. Hãy nghĩ về máy vật lý của chúng ta như một ngăn kéo đựng tất. Nếu chúng ta đặt nhiều vách ngăn bằng gỗ vào ngăn kéo của mình, chúng ta có thể lưu trữ nhiều tất hơn hay ít hơn? Câu trả lời là ít hơn: chính các vách ngăn cũng chiếm chỗ! Ngăn kéo của chúng ta có thể dễ dàng đối phó và sắp xếp hơn, và có lẽ chúng ta có thể quyết định đặt áo phông vào một trong các không gian thay vì chỉ là tất, nhưng nhiều vách ngăn hơn có nghĩa là ít không gian tổng thể hơn.
+
+Trong thế giới ảo hóa, chúng ta có một chi phí tương tự như các vách ngăn ngăn kéo của chúng ta. Để hiểu chi phí này đến từ đâu, hãy xem cách hầu hết ảo hóa được thực hiện. Hình 6-9 cho thấy một sự so sánh của hai loại ảo hóa.
+*   Bên trái, chúng ta thấy các lớp khác nhau liên quan đến cái được gọi là **ảo hóa loại 2 (type 2 virtualization)**, là loại được triển khai bởi AWS, VMWare, VSphere, Xen, và KVM. (Ảo hóa loại 1 đề cập đến công nghệ nơi các VM chạy trực tiếp trên phần cứng, không phải trên một hệ điều hành khác.)
+*   Trên cơ sở hạ tầng vật lý của chúng ta, chúng ta có một hệ điều hành máy chủ. Trên HĐH này, chúng ta chạy một cái gì đó được gọi là **trình ảo hóa (hypervisor)**, có hai công việc chính.
+    *   Thứ nhất, nó ánh xạ các tài nguyên như CPU và bộ nhớ từ máy chủ ảo đến máy chủ vật lý.
+    *   Thứ hai, nó hoạt động như một lớp điều khiển, cho phép chúng ta thao tác với chính các máy ảo.
+
+![alt text](<images/Screenshot from 2025-09-29 13-05-43.png>)
+
+**Hình 6-9.** *So sánh ảo hóa loại 2 tiêu chuẩn và container nhẹ*
+
+Bên trong các VM, chúng ta có được những gì trông giống như các máy chủ hoàn toàn khác nhau. Chúng có thể chạy các hệ điều hành riêng của chúng, với các `kernel` riêng của chúng. Chúng có thể được coi là các máy gần như được niêm phong kín, được giữ cô lập khỏi máy chủ vật lý cơ bản và các máy ảo khác bởi trình ảo hóa.
+
+Vấn đề là trình ảo hóa ở đây cần phải dành riêng các tài nguyên để thực hiện công việc của mình. Điều này lấy đi CPU, I/O, và bộ nhớ có thể được sử dụng ở nơi khác. Càng nhiều máy chủ mà trình ảo hóa quản lý, nó càng cần nhiều tài nguyên hơn. Tại một thời điểm nhất định, chi phí này trở thành một ràng buộc trong việc chia nhỏ cơ sở hạ tầng vật lý của bạn thêm nữa. Trong thực tế, điều này có nghĩa là thường có lợi nhuận giảm dần trong việc chia nhỏ một hộp vật lý thành các phần ngày càng nhỏ hơn, vì tỷ lệ tài nguyên ngày càng nhiều hơn đi vào chi phí của trình ảo hóa.
+
+##### **Vagrant**
+
+Vagrant là một nền tảng triển khai rất hữu ích, thường được sử dụng cho việc phát triển và kiểm thử hơn là sản xuất. Vagrant cung cấp cho bạn một đám mây ảo trên máy tính xách tay của bạn. Bên dưới, nó sử dụng một hệ thống ảo hóa tiêu chuẩn (thường là VirtualBox, mặc dù nó có thể sử dụng các nền tảng khác). Nó cho phép bạn định nghĩa một tập hợp các VM trong một tệp văn bản, cùng với cách các VM được kết nối mạng với nhau và các hình ảnh mà các VM nên dựa trên. Tệp văn bản này có thể được `check-in` và chia sẻ giữa các thành viên trong đội.
+
+Điều này giúp bạn dễ dàng tạo ra các môi trường giống sản xuất trên máy cục bộ của mình. Bạn có thể khởi động nhiều VM cùng một lúc, tắt các VM riêng lẻ để kiểm tra các chế độ lỗi, và để các VM được ánh xạ qua các thư mục cục bộ để bạn có thể thực hiện các thay đổi và thấy chúng được phản ánh ngay lập tức. Ngay cả đối với các đội sử dụng các nền tảng đám mây theo yêu cầu như AWS, việc quay vòng nhanh hơn của việc sử dụng Vagrant có thể là một lợi ích to lớn cho các đội phát triển.
+
+Tuy nhiên, một trong những nhược điểm là việc chạy nhiều VM có thể làm quá tải máy phát triển trung bình. Nếu chúng ta có một dịch vụ cho một VM, bạn có thể không thể đưa toàn bộ hệ thống của mình lên máy cục bộ của mình. Điều này có thể dẫn đến nhu cầu `stub` ra một số phụ thuộc để làm cho mọi thứ có thể quản lý được, đó là một điều nữa bạn sẽ phải xử lý để đảm bảo trải nghiệm phát triển và kiểm thử là tốt.
+
+##### **Linux Containers**
+
+Đối với người dùng Linux, có một giải pháp thay thế cho ảo hóa. Thay vì có một `hypervisor` để phân đoạn và kiểm soát các máy chủ ảo riêng biệt, các **container Linux** thay vào đó tạo ra một không gian tiến trình riêng biệt trong đó các tiến trình khác sống.
+
+Trên Linux, các tiến trình được chạy bởi một người dùng nhất định, và có các khả năng nhất định dựa trên cách các quyền được thiết lập. Các tiến trình có thể sinh ra các tiến trình khác. Ví dụ, nếu tôi khởi chạy một tiến trình trong một terminal, tiến trình con đó thường được coi là một con của tiến trình terminal. Công việc của `kernel` Linux là duy trì cây tiến trình này.
+
+Các `container` Linux mở rộng ý tưởng này. Mỗi `container` thực chất là một cây con của cây tiến trình hệ thống tổng thể. Các `container` này có thể có các tài nguyên vật lý được phân bổ cho chúng, một điều mà `kernel` xử lý cho chúng ta. Cách tiếp cận chung này đã tồn tại dưới nhiều hình thức, chẳng hạn như Solaris Zones và OpenVZ, nhưng chính **LXC** đã trở nên phổ biến nhất. LXC hiện có sẵn ngay từ đầu trong bất kỳ `kernel` Linux hiện đại nào.
+
+Nếu chúng ta xem xét một sơ đồ `stack` cho một máy chủ đang chạy LXC trong Hình 6-9, chúng ta thấy một vài điểm khác biệt.
+*   **Thứ nhất**, chúng ta không cần một `hypervisor`.
+*   **Thứ hai**, mặc dù mỗi `container` có thể chạy phân phối hệ điều hành riêng của mình, nó phải chia sẻ cùng một `kernel` (vì `kernel` là nơi cây tiến trình sống). Điều này có nghĩa là hệ điều hành máy chủ của chúng ta có thể chạy Ubuntu, và các `container` của chúng ta CentOS, miễn là cả hai đều có thể chia sẻ cùng một `kernel`.
+
+Chúng ta không chỉ được hưởng lợi từ các tài nguyên được tiết kiệm do không cần một `hypervisor`. Chúng ta cũng có được lợi ích về mặt phản hồi. Các `container` Linux nhanh hơn nhiều để cấp phát so với các máy ảo đầy đủ. Việc một VM mất nhiều phút để khởi động không phải là hiếm—nhưng với các `container` Linux, việc khởi động có thể mất vài giây. Bạn cũng có quyền kiểm soát chi tiết hơn đối với chính các `container` về mặt phân bổ tài nguyên cho chúng, điều này giúp việc tinh chỉnh các cài đặt để tận dụng tối đa phần cứng cơ bản trở nên dễ dàng hơn nhiều.
+
+Do bản chất nhẹ hơn của các `container`, chúng ta có thể có nhiều `container` hơn chạy trên cùng một phần cứng so với những gì có thể với các VM. Bằng cách triển khai một dịch vụ cho mỗi `container`, như trong Hình 6-10, chúng ta có được một mức độ cô lập khỏi các `container` khác (mặc dù điều này không hoàn hảo), và có thể làm điều đó một cách hiệu quả hơn nhiều về mặt chi phí so với những gì có thể nếu chúng ta muốn chạy mỗi dịch vụ trong VM riêng của nó.
+
+![alt text](<images/Screenshot from 2025-09-29 13-05-51.png>)
+
+**Hình 6-10.** *Chạy các dịch vụ trong các container riêng biệt*
+
+Các `container` cũng có thể được sử dụng tốt với ảo hóa đầy đủ. Tôi đã thấy nhiều hơn một dự án cấp phát một phiên bản AWS EC2 lớn và chạy các `container` LXC trên đó để có được điều tốt nhất của cả hai thế giới: một nền tảng điện toán tạm thời, theo yêu cầu dưới dạng EC2, kết hợp với các `container` linh hoạt và nhanh chóng chạy trên đó.
+
+Tuy nhiên, các `container` Linux không phải là không có vấn đề. Hãy tưởng tượng tôi có rất nhiều microservice đang chạy trong các `container` riêng của chúng trên một máy chủ. Thế giới bên ngoài thấy chúng như thế nào? Bạn cần một cách nào đó để định tuyến thế giới bên ngoài vào các `container` cơ bản, một điều mà nhiều `hypervisor` làm cho bạn với ảo hóa thông thường. Tôi đã thấy nhiều người chìm đắm trong một lượng thời gian không tương xứng vào việc cấu hình chuyển tiếp cổng bằng `IPTables` để phơi bày các `container` trực tiếp. Một điểm khác cần lưu ý là các `container` này không thể được coi là hoàn toàn được niêm phong khỏi nhau. Có nhiều cách được ghi nhận và biết đến mà một tiến trình từ một `container` có thể thoát ra và tương tác với các `container` khác hoặc máy chủ cơ bản. Một số vấn đề này là do thiết kế và một số là các lỗi đang được giải quyết, nhưng dù sao đi nữa, nếu bạn không tin tưởng vào mã bạn đang chạy, đừng mong đợi rằng bạn có thể chạy nó trong một `container` và được an toàn. Nếu bạn cần loại cô lập đó, bạn sẽ cần phải xem xét việc sử dụng các máy ảo thay thế.
+
+##### **Docker**
+
+**Docker** là một nền tảng được xây dựng trên các `container` nhẹ. Nó xử lý phần lớn công việc xung quanh việc xử lý các `container` cho bạn. Trong Docker, bạn tạo và triển khai các **ứng dụng**, đồng nghĩa với các hình ảnh trong thế giới VM, mặc dù là cho một nền tảng dựa trên `container`. Docker quản lý việc cấp phát `container`, xử lý một số vấn đề mạng cho bạn, và thậm chí còn cung cấp khái niệm sổ đăng ký (`registry`) riêng cho phép bạn lưu trữ và phiên bản hóa các ứng dụng Docker.
+
+Sự trừu tượng hóa ứng dụng Docker là một điều hữu ích đối với chúng ta, bởi vì giống như với các hình ảnh VM, công nghệ cơ bản được sử dụng để triển khai dịch vụ được ẩn khỏi chúng ta. Chúng ta có các bản dựng cho các dịch vụ của mình tạo ra các ứng dụng Docker, và lưu trữ chúng trong sổ đăng ký Docker, và thế là xong.
+
+Docker cũng có thể giảm bớt một số nhược điểm của việc chạy nhiều dịch vụ cục bộ cho các mục đích phát triển và kiểm thử. Thay vì sử dụng Vagrant để lưu trữ nhiều VM độc lập, mỗi VM chứa dịch vụ riêng của mình, chúng ta có thể lưu trữ một VM duy nhất trong Vagrant chạy một phiên bản Docker. Sau đó, chúng ta sử dụng Vagrant để thiết lập và gỡ bỏ chính nền tảng Docker, và sử dụng Docker để cấp phát nhanh các dịch vụ riêng lẻ.
+
+Một số công nghệ khác nhau đang được phát triển để tận dụng Docker. **CoreOS** là một hệ điều hành rất thú vị được thiết kế với Docker. Nó là một HĐH Linux được rút gọn chỉ cung cấp các dịch vụ thiết yếu để cho phép Docker chạy. Điều này có nghĩa là nó tiêu thụ ít tài nguyên hơn các hệ điều hành khác, giúp có thể dành nhiều tài nguyên hơn của máy cơ bản cho các `container` của chúng ta. Thay vì sử dụng một trình quản lý gói như `debs` hoặc `RPM`, tất cả phần mềm được cài đặt dưới dạng các ứng dụng Docker độc lập, mỗi ứng dụng chạy trong `container` riêng của nó.
+
+Bản thân Docker không giải quyết tất cả các vấn đề cho chúng ta. Hãy nghĩ về nó như một PaaS đơn giản hoạt động trên một máy duy nhất. Nếu bạn muốn các công cụ giúp bạn quản lý các dịch vụ trên nhiều phiên bản Docker trên nhiều máy, bạn sẽ cần phải xem xét các phần mềm khác bổ sung các khả năng này. Có một nhu cầu chính về một lớp **lập lịch (scheduling)** cho phép bạn yêu cầu một `container` và sau đó tìm một `container` Docker có thể chạy nó cho bạn. Trong không gian này, **Kubernetes** được mã nguồn mở gần đây của Google và công nghệ cụm của CoreOS có thể giúp ích, và có vẻ như mỗi tháng lại có một người mới tham gia vào không gian này. **Deis** là một công cụ thú vị khác dựa trên Docker, đang cố gắng cung cấp một PaaS giống Heroku trên Docker.
+
+Tôi đã nói trước đó về các giải pháp PaaS. Cuộc đấu tranh của tôi với chúng luôn là chúng thường nhận sai mức độ trừu tượng, và các giải pháp tự lưu trữ tụt hậu đáng kể so với các giải pháp được lưu trữ như Heroku. Docker làm đúng điều này hơn rất nhiều, và sự bùng nổ quan tâm đến không gian này có nghĩa là tôi nghi ngờ nó sẽ trở thành một nền tảng khả thi hơn nhiều cho tất cả các loại triển khai trong vài năm tới cho tất cả các loại trường hợp sử dụng khác nhau. Theo nhiều cách, Docker với một lớp lập lịch phù hợp nằm giữa IaaS và PaaS—thuật ngữ **containers as a service (CaaS)** đã được sử dụng để mô tả nó.
+
+Docker đang được sử dụng trong sản xuất bởi nhiều công ty. Nó cung cấp nhiều lợi ích của các `container` nhẹ về mặt hiệu quả và tốc độ cấp phát, cùng với các công cụ để tránh nhiều nhược điểm. Nếu bạn quan tâm đến việc xem xét các nền tảng triển khai thay thế, tôi thực sự khuyên bạn nên xem xét Docker.
+
+*(Phần tiếp theo và cuối cùng của chương này sẽ thảo luận về "A Deployment Interface" và "Environment Definition".)*
+
+Chắc chắn rồi! Chúng ta sẽ hoàn thành Chương 6 với phần cuối cùng, tập trung vào việc tạo ra một giao diện triển khai thống nhất và định nghĩa môi trường.
+
+---
+
+#### **Giao diện Triển khai (A Deployment Interface)**
+
+Bất kể nền tảng hoặc tạo tác cơ bản nào bạn sử dụng, việc có một giao diện thống nhất để triển khai một dịch vụ nhất định là rất quan trọng. Chúng ta sẽ muốn kích hoạt việc triển khai một microservice theo yêu cầu trong nhiều tình huống khác nhau, từ việc triển khai cục bộ để phát triển và kiểm thử đến các lần triển khai sản xuất. Chúng ta cũng muốn giữ cho các cơ chế triển khai của mình càng giống nhau càng tốt từ phát triển đến sản xuất, vì điều cuối cùng chúng ta muốn là gặp phải các vấn đề trong sản xuất bởi vì việc triển khai sử dụng một quy trình hoàn toàn khác!
+
+Sau nhiều năm làm việc trong lĩnh vực này, tôi tin rằng cách hợp lý nhất để kích hoạt bất kỳ lần triển khai nào là thông qua một lệnh dòng lệnh duy nhất, có thể tham số hóa. Điều này có thể được kích hoạt bởi các tập lệnh, được khởi chạy bởi công cụ CI của bạn, hoặc được gõ bằng tay. Tôi đã xây dựng các tập lệnh bao bọc (`wrapper scripts`) trong nhiều `technology stack` khác nhau để thực hiện điều này, từ Windows batch, đến bash, đến các tập lệnh Python Fabric, và nhiều hơn nữa, nhưng tất cả các dòng lệnh đều có cùng một định dạng cơ bản.
+
+Chúng ta cần biết chúng ta đang triển khai *cái gì*, vì vậy chúng ta cần cung cấp tên của một thực thể đã biết, hoặc trong trường hợp của chúng ta là một microservice. Chúng ta cũng cần biết *phiên bản* nào của thực thể chúng ta muốn. Câu trả lời cho *phiên bản nào* có xu hướng là một trong ba khả năng.
+*   Khi bạn đang làm việc cục bộ, đó sẽ là bất kỳ phiên bản nào có trên máy cục bộ của bạn.
+*   Khi kiểm thử, bạn sẽ muốn bản dựng **màu xanh lá cây (green build)** mới nhất, có thể chỉ là tạo tác được chứng nhận gần đây nhất trong kho lưu trữ tạo tác của chúng ta.
+*   Hoặc khi kiểm thử/chẩn đoán các vấn đề, chúng ta có thể muốn triển khai một bản dựng chính xác.
+
+Điều thứ ba và cuối cùng chúng ta cần biết là chúng ta muốn microservice được triển khai vào *môi trường* nào. Như chúng ta đã thảo luận trước đó, cấu trúc liên kết (`topology`) của microservice của chúng ta có thể khác nhau từ môi trường này sang môi trường khác, nhưng điều đó nên được ẩn khỏi chúng ta ở đây.
+
+Vì vậy, hãy tưởng tượng chúng ta tạo một tập lệnh triển khai đơn giản lấy ba tham số này. Giả sử chúng ta đang phát triển cục bộ và muốn triển khai dịch vụ danh mục của mình vào môi trường cục bộ của chúng ta. Tôi có thể gõ:
+```bash
+$ deploy artifact=catalog environment=local version=local
+```
+Một khi tôi đã `check-in`, dịch vụ xây dựng CI của chúng tôi sẽ nhận thay đổi và tạo ra một tạo tác xây dựng mới, đặt cho nó số hiệu bản dựng `b456`. Như là tiêu chuẩn trong hầu hết các công cụ CI, giá trị này được truyền đi trong suốt đường ống. Khi giai đoạn kiểm thử của chúng ta được kích hoạt, giai đoạn CI sẽ chạy:
+```bash
+$ deploy artifact=catalog environment=ci version=b456
+```
+Trong khi đó, QA của chúng ta muốn kéo phiên bản mới nhất của dịch vụ danh mục vào một môi trường kiểm thử tích hợp để thực hiện một số kiểm thử thăm dò, và để giúp cho một buổi giới thiệu. Đội đó chạy:
+```bash
+$ deploy artifact=catalog environment=integrated_qa version=latest
+```
+Công cụ mà tôi đã sử dụng nhiều nhất cho việc này là **Fabric**, một thư viện Python được thiết kế để ánh xạ các cuộc gọi dòng lệnh đến các hàm, cùng với sự hỗ trợ tốt cho việc xử lý các tác vụ như `SSH` vào các máy từ xa. Kết hợp nó với một thư viện máy khách AWS như Boto, và bạn có mọi thứ bạn cần để tự động hóa hoàn toàn các môi trường AWS rất lớn. Đối với Ruby, **Capistrano** tương tự theo một số cách với Fabric, và trên Windows, bạn có thể đi một chặng đường dài bằng cách sử dụng PowerShell.
+
+#### **Định nghĩa Môi trường (Environment Definition)**
+
+Rõ ràng, để điều này hoạt động, chúng ta cần có một cách nào đó để định nghĩa các môi trường của chúng ta trông như thế nào, và dịch vụ của chúng ta trông như thế nào trong một môi trường nhất định. Bạn có thể nghĩ về một định nghĩa môi trường như một sự ánh xạ từ một microservice đến các tài nguyên tính toán, mạng và lưu trữ. Tôi đã làm điều này với các tệp YAML trước đây, và đã sử dụng các tập lệnh của mình để kéo dữ liệu này vào. Ví dụ 6-1 là một phiên bản đơn giản hóa của một số công việc tôi đã làm vài năm trước cho một dự án sử dụng AWS.
+
+**Ví dụ 6-1.** *Một ví dụ về định nghĩa môi trường*
+```yaml
+development:
+  nodes:
+    - ami_id: ami-e1e1234
+      size: t1.micro        # 1
+      credentials_name: eu-west-ssh  # 2
+      services: [catalog-service]
+      region: eu-west-1
+
+production:
+  nodes:
+    - ami_id: ami-e1e1234
+      size: m3.xlarge       # 1
+      credentials_name: prod-credentials  # 2
+      services: [catalog-service]
+      number: 5            # 3
+```1.  Chúng tôi đã thay đổi kích thước của các phiên bản chúng tôi đã sử dụng để hiệu quả hơn về chi phí. Bạn không cần một hộp 16 lõi với 64GB RAM cho việc kiểm thử thăm dò!
+2.  Việc có thể chỉ định các thông tin đăng nhập khác nhau cho các môi trường khác nhau là chìa khóa. Thông tin đăng nhập cho các môi trường nhạy cảm được lưu trữ trong các kho mã nguồn khác nhau mà chỉ một số người được chọn mới có quyền truy cập.
+3.  Chúng tôi đã quyết định rằng theo mặc định, nếu một dịch vụ có nhiều hơn một nút được cấu hình, chúng tôi sẽ tự động tạo ra một bộ cân bằng tải cho nó.
+
+Tôi đã loại bỏ một số chi tiết vì mục đích ngắn gọn.
+
+Thông tin `catalog-service` được lưu trữ ở nơi khác. Nó không khác nhau từ môi trường này sang môi trường khác, như bạn có thể thấy trong Ví dụ 6-2.
+
+**Ví dụ 6-2.** *Một ví dụ về định nghĩa môi trường*
+```yaml
+catalog-service:
+  puppet_manifest : catalog.pp  # 1
+  connectivity:
+    - protocol: tcp
+      ports: [ 8080, 8081 ]
+      allowed: [ WORLD ]
+```
+1.  Đây là tên của tệp Puppet để chạy—chúng tôi tình cờ sử dụng Puppet solo trong tình huống này, nhưng về mặt lý thuyết có thể đã hỗ trợ các hệ thống cấu hình thay thế khác.
+
+Rõ ràng, rất nhiều hành vi ở đây dựa trên quy ước. Ví dụ, chúng tôi đã quyết định chuẩn hóa các cổng mà các dịch vụ sử dụng ở bất cứ đâu chúng chạy, và tự động cấu hình các bộ cân bằng tải nếu một dịch vụ có nhiều hơn một phiên bản (một điều mà các ELB của AWS làm khá dễ dàng).
+
+Việc xây dựng một hệ thống như thế này đòi hỏi một lượng công việc đáng kể. Nỗ lực thường được dồn vào phía trước, nhưng có thể là cần thiết để quản lý sự phức tạp của việc triển khai mà bạn có. Tôi hy vọng trong tương lai bạn sẽ không phải tự mình làm điều này. **Terraform** là một công cụ rất mới từ Hashicorp, hoạt động trong không gian này. Tôi thường sẽ ngại đề cập đến một công cụ mới như vậy trong một cuốn sách thiên về ý tưởng hơn là công nghệ, nhưng nó đang cố gắng tạo ra một công cụ mã nguồn mở theo những dòng này. Bây giờ vẫn còn sớm, nhưng các khả năng của nó đã có vẻ rất thú vị. Với khả năng nhắm mục tiêu các triển khai trên một số nền tảng khác nhau, trong tương lai nó có thể chỉ là công cụ cho công việc.
+
+---
+#### **Tóm tắt (Summary)**
+
+Chúng ta đã đề cập rất nhiều ở đây, vì vậy một bản tóm tắt là cần thiết.
+*   **Thứ nhất**, hãy tập trung vào việc duy trì khả năng phát hành một dịch vụ một cách độc lập với dịch vụ khác, và đảm bảo rằng bất kỳ công nghệ nào bạn chọn đều hỗ trợ điều này. Tôi rất thích có một kho lưu trữ duy nhất cho mỗi microservice, nhưng tôi còn chắc chắn hơn rằng bạn cần một bản dựng CI cho mỗi microservice nếu bạn muốn triển khai chúng riêng biệt.
+*   **Tiếp theo**, nếu có thể, hãy chuyển sang mô hình một dịch vụ trên mỗi máy chủ/container. Hãy xem xét các công nghệ thay thế như LXC hoặc Docker để làm cho việc quản lý các bộ phận chuyển động rẻ hơn và dễ dàng hơn, nhưng hãy hiểu rằng bất kể bạn áp dụng công nghệ nào, một văn hóa tự động hóa là chìa khóa để quản lý mọi thứ. **Tự động hóa mọi thứ**, và nếu công nghệ bạn có không cho phép điều này, hãy tìm một công nghệ mới! Việc có thể sử dụng một nền tảng như AWS sẽ mang lại cho bạn những lợi ích to lớn khi nói đến tự động hóa.
+*   Hãy chắc chắn rằng bạn hiểu **tác động của các lựa chọn triển khai của bạn đối với các nhà phát triển**, và đảm bảo họ cảm thấy được yêu thương. Việc tạo ra các công cụ cho phép bạn tự phục vụ triển khai bất kỳ dịch vụ nào vào một số môi trường khác nhau là rất quan trọng, và sẽ giúp các nhà phát triển, người kiểm thử, và những người vận hành.
+*   **Cuối cùng**, nếu bạn muốn đi sâu hơn vào chủ đề này, tôi thực sự khuyên bạn nên đọc cuốn *Continuous Delivery* của Jez Humble và David Farley (Addison-Wesley), cuốn sách này đi sâu hơn vào các chủ đề như thiết kế đường ống và quản lý tạo tác.
+
+Trong chương tiếp theo, chúng ta sẽ đi sâu hơn vào một chủ đề mà chúng ta đã đề cập ngắn gọn ở đây. Cụ thể là, làm thế nào để chúng ta kiểm thử các microservice của mình để đảm bảo chúng thực sự hoạt động?
+
+*(Kết thúc Chương 6. Chúng ta sẽ tiếp tục với Chương 7: "Testing".)*
+
